@@ -1,0 +1,7 @@
+include README.md
+include LICENSE
+prune pytan/BUILD
+prune pytan/EXAMPLES
+prune pytan/doc
+prune pytan/winbin
+prune pytan/test
