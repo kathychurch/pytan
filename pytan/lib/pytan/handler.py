@@ -3,24 +3,13 @@
 # Please do not change the two lines above. See PEP 8, PEP 263.
 """The main :mod:`pytan` module that provides first level entities for programmatic use."""
 import sys
-
-# disable python from creating .pyc files everywhere
-sys.dont_write_bytecode = True
-
 import os
 import logging
 import io
 import datetime
 import pprint
 import json
-
-my_file = os.path.abspath(__file__)
-my_dir = os.path.dirname(my_file)
-parent_dir = os.path.dirname(my_dir)
-path_adds = [parent_dir]
-[sys.path.insert(0, aa) for aa in path_adds if aa not in sys.path]
-
-import taniumpy
+from pytan.lib import taniumpy
 import pytan
 
 
@@ -168,16 +157,16 @@ class Handler(object):
             setattr(self, k, v)
 
         # setup the console logging handler
-        pytan.utils.setup_console_logging(gmt_tz=self.gmt_log)
+        pytan.lib.pytan.utils.setup_console_logging(gmt_tz=self.gmt_log)
 
         # create all the loggers and set their levels based on loglevel
-        pytan.utils.set_log_levels(loglevel=self.loglevel)
+        pytan.lib.pytan.utils.set_log_levels(loglevel=self.loglevel)
 
         # change the format of console logging handler if need be
-        pytan.utils.change_console_format(debug=self.debugformat)
+        pytan.lib.pytan.utils.change_console_format(debug=self.debugformat)
 
         # get the default pytan user config file
-        puc_default = os.path.expanduser(pytan.constants.PYTAN_USER_CONFIG)
+        puc_default = os.path.expanduser(pytan.lib.pytan.constants.PYTAN_USER_CONFIG)
 
         # see if the pytan_user_config file location was overridden
         puc_kwarg = kwargs.get('pytan_user_config', '')
@@ -186,13 +175,13 @@ class Handler(object):
         kwargs = self.read_pytan_user_config(kwargs)
 
         if gmt_log != self.gmt_log:
-            pytan.utils.setup_console_logging(gmt_tz=self.gmt_log)
+            pytan.lib.pytan.utils.setup_console_logging(gmt_tz=self.gmt_log)
 
         if loglevel != self.loglevel:
-            pytan.utils.set_log_levels(loglevel=self.loglevel)
+            pytan.lib.pytan.utils.set_log_levels(loglevel=self.loglevel)
 
         if debugformat != self.debugformat:
-            pytan.utils.change_console_format(debug=self.debugformat)
+            pytan.lib.pytan.utils.change_console_format(debug=self.debugformat)
 
         self.debug_method_locals = kwargs.get('debug_method_locals', False)
 
@@ -201,26 +190,26 @@ class Handler(object):
         if not self.session_id:
 
             if not self.username:
-                raise pytan.exceptions.HandlerError("Must supply username!")
+                raise pytan.lib.pytan.exceptions.HandlerError("Must supply username!")
 
             if not self.password:
-                raise pytan.exceptions.HandlerError("Must supply password!")
+                raise pytan.lib.pytan.exceptions.HandlerError("Must supply password!")
 
         if self.password:
-            self.password = pytan.utils.vig_decode(pytan.constants.PYTAN_KEY, self.password)
+            self.password = pytan.lib.pytan.utils.vig_decode(pytan.lib.pytan.constants.PYTAN_KEY, self.password)
 
         if not self.host:
-            raise pytan.exceptions.HandlerError("Must supply host!")
+            raise pytan.lib.pytan.exceptions.HandlerError("Must supply host!")
 
         if not self.port:
-            raise pytan.exceptions.HandlerError("Must supply port!")
+            raise pytan.lib.pytan.exceptions.HandlerError("Must supply port!")
 
         try:
             self.port = int(self.port)
         except ValueError:
-            raise pytan.exceptions.HandlerError("port must be an integer!")
+            raise pytan.lib.pytan.exceptions.HandlerError("port must be an integer!")
 
-        pytan.utils.test_app_port(host=self.host, port=self.port)
+        pytan.lib.pytan.utils.test_app_port(host=self.host, port=self.port)
 
         # establish our Session class
         self.session = pytan.sessions.Session(host=self.host, port=self.port, **kwargs)
@@ -261,13 +250,13 @@ class Handler(object):
             self.mylog.info(m(self.puc))
 
             # handle class params
-            for h_arg, arg_default in pytan.constants.HANDLER_ARG_DEFAULTS.iteritems():
+            for h_arg, arg_default in pytan.lib.pytan.constants.HANDLER_ARG_DEFAULTS.iteritems():
                 if h_arg not in puc_dict:
                     continue
 
                 if h_arg == 'password':
-                    puc_dict['password'] = pytan.utils.vig_decode(
-                        pytan.constants.PYTAN_KEY, puc_dict['password'],
+                    puc_dict['password'] = pytan.lib.pytan.utils.vig_decode(
+                        pytan.lib.pytan.constants.PYTAN_KEY, puc_dict['password'],
                     )
 
                 class_val = getattr(self, h_arg, None)
@@ -327,14 +316,14 @@ class Handler(object):
             puc_dict[k] = v
 
         # obfuscate the password
-        puc_dict['password'] = pytan.utils.vig_encode(pytan.constants.PYTAN_KEY, self.password)
+        puc_dict['password'] = pytan.lib.pytan.utils.vig_encode(pytan.lib.pytan.constants.PYTAN_KEY, self.password)
 
         try:
             with open(puc, 'w+') as fh:
                 json.dump(puc_dict, fh, skipkeys=True, indent=2)
         except Exception as e:
             m = "Failed to write PyTan User config: '{}', exception: {}".format
-            raise pytan.exceptions.HandlerError(m(puc, e))
+            raise pytan.lib.pytan.exceptions.HandlerError(m(puc, e))
         else:
             m = "PyTan User config file successfully written: {} ".format
             self.mylog.info(m(puc))
@@ -371,7 +360,7 @@ class Handler(object):
 
         See Also
         --------
-        :data:`pytan.constants.Q_OBJ_MAP` : maps qtype to a method in Handler()
+        :data:`pytan.lib.pytan.constants.Q_OBJ_MAP` : maps qtype to a method in Handler()
         :func:`pytan.handler.Handler.ask_saved` : method used when qtype == 'saved'
         :func:`pytan.handler.Handler.ask_manual` : method used when qtype == 'manual'
         :func:`pytan.handler.Handler._ask_manual` : method used when qtype == '_manual'
@@ -381,9 +370,9 @@ class Handler(object):
         qtype = kwargs.get('qtype', 'manual')
 
         clean_keys = ['qtype']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
-        q_obj_map = pytan.utils.get_q_obj_map(qtype=qtype)
+        q_obj_map = pytan.lib.pytan.utils.get_q_obj_map(qtype=qtype)
 
         method = getattr(self, q_obj_map['handler'])
         result = method(**clean_kwargs)
@@ -454,7 +443,7 @@ class Handler(object):
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs)
         sse = kwargs.get('sse', False)
         clean_kwargs['sse_format'] = clean_kwargs.get('sse_format', 'xml_obj')
 
@@ -468,7 +457,7 @@ class Handler(object):
                 "saved question!\nArgs: {}\nReturned saved questions:\n\t{}"
             ).format
             sq_obj_str = '\n\t'.join([str(x) for x in sq_objs])
-            raise pytan.exceptions.HandlerError(err(kwargs, sq_obj_str))
+            raise pytan.lib.pytan.exceptions.HandlerError(err(kwargs, sq_obj_str))
 
         sq_obj = sq_objs[0]
 
@@ -495,7 +484,7 @@ class Handler(object):
                 "Issue a GetObject for the saved question in order get the ID of the newly "
                 "asked question"
             )
-            shrunk_obj = pytan.utils.shrink_obj(obj=sq_obj)
+            shrunk_obj = pytan.lib.pytan.utils.shrink_obj(obj=sq_obj)
             sq_obj = self._find(obj=shrunk_obj, pytan_help=h, **clean_kwargs)
 
             h = (
@@ -667,24 +656,24 @@ class Handler(object):
 
         See Also
         --------
-        :data:`pytan.constants.FILTER_MAPS` : valid filter dictionaries for filters
-        :data:`pytan.constants.OPTION_MAPS` : valid option dictionaries for options
+        :data:`pytan.lib.pytan.constants.FILTER_MAPS` : valid filter dictionaries for filters
+        :data:`pytan.lib.pytan.constants.OPTION_MAPS` : valid option dictionaries for options
         :func:`pytan.handler.Handler._ask_manual` : private method with the actual workflow used to create and add the question object
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
-        pytan.utils.check_for_help(kwargs=kwargs)
+        pytan.lib.pytan.utils.check_for_help(kwargs=kwargs)
 
         sensors = kwargs.get('sensors', [])
         q_filters = kwargs.get('question_filters', [])
         q_options = kwargs.get('question_options', [])
 
-        sensor_defs = pytan.utils.dehumanize_sensors(sensors=sensors)
-        q_filter_defs = pytan.utils.dehumanize_question_filters(question_filters=q_filters)
-        q_option_defs = pytan.utils.dehumanize_question_options(question_options=q_options)
+        sensor_defs = pytan.lib.pytan.utils.dehumanize_sensors(sensors=sensors)
+        q_filter_defs = pytan.lib.pytan.utils.dehumanize_question_filters(question_filters=q_filters)
+        q_option_defs = pytan.lib.pytan.utils.dehumanize_question_options(question_options=q_options)
 
         clean_keys = ['sensor_defs', 'question_filter_defs', 'question_option_defs']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         result = self._ask_manual(
             sensor_defs=sensor_defs,
@@ -711,14 +700,14 @@ class Handler(object):
         if not self.session.platform_is_6_5(**kwargs):
             m = "ParseJob not supported in version: {}".format
             m = m(self.session.server_version)
-            raise pytan.exceptions.UnsupportedVersionError(m)
+            raise pytan.lib.pytan.exceptions.UnsupportedVersionError(m)
 
         parse_job = taniumpy.ParseJob()
         parse_job.question_text = question_text
         parse_job.parser_version = 2
 
         clean_keys = ['obj']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         parse_job_results = self.session.add(obj=parse_job, **clean_kwargs)
         return parse_job_results
@@ -797,10 +786,10 @@ class Handler(object):
         if not self.session.platform_is_6_5(**kwargs):
             m = "ParseJob not supported in version: {}".format
             m = m(self.session.server_version)
-            raise pytan.exceptions.UnsupportedVersionError(m)
+            raise pytan.lib.pytan.exceptions.UnsupportedVersionError(m)
 
         clean_keys = ['obj', 'question_text', 'handler']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         sse = kwargs.get('sse', False)
         clean_kwargs['sse_format'] = clean_kwargs.get('sse_format', 'xml_obj')
@@ -814,7 +803,7 @@ class Handler(object):
             m = (
                 "Question Text '{}' was unable to be parsed into a valid query text by the server"
             ).format
-            raise pytan.exceptions.ServerParseError(m())
+            raise pytan.lib.pytan.exceptions.ServerParseError(m())
 
         pi = "Index {0}, Score: {1.score}, Query: {1.question_text!r}".format
         pw = (
@@ -826,7 +815,7 @@ class Handler(object):
             self.mylog.critical(pw())
             for idx, x in enumerate(parse_job_results):
                 self.mylog.critical(pi(idx + 1, x))
-            raise pytan.exceptions.PickerError(pw())
+            raise pytan.lib.pytan.exceptions.PickerError(pw())
 
         try:
             picked_parse_job = parse_job_results[picker - 1]
@@ -839,7 +828,7 @@ class Handler(object):
             pi = "Index {0}, Score: {1.score}, Query: {1.question_text!r}"
             for idx, x in enumerate(parse_job_results):
                 self.mylog.critical(pi(idx + 1, x))
-            raise pytan.exceptions.PickerError(pw())
+            raise pytan.lib.pytan.exceptions.PickerError(pw())
 
         add_obj = picked_parse_job.question
 
@@ -910,7 +899,7 @@ class Handler(object):
             * expire action N seconds from now, will be derived from package if not supplied
         run : bool, optional
             * default: False
-            * False: just ask the question that pertains to verify action, export the results to CSV, and raise pytan.exceptions.RunFalse -- does not deploy the action
+            * False: just ask the question that pertains to verify action, export the results to CSV, and raise pytan.lib.pytan.exceptions.RunFalse -- does not deploy the action
             * True: actually deploy the action
         get_results : bool, optional
             * default: True
@@ -966,13 +955,13 @@ class Handler(object):
 
         See Also
         --------
-        :data:`pytan.constants.FILTER_MAPS` : valid filter dictionaries for filters
-        :data:`pytan.constants.OPTION_MAPS` : valid option dictionaries for options
+        :data:`pytan.lib.pytan.constants.FILTER_MAPS` : valid filter dictionaries for filters
+        :data:`pytan.lib.pytan.constants.OPTION_MAPS` : valid option dictionaries for options
         :func:`pytan.handler.Handler._deploy_action` : private method with the actual workflow used to create and add the action object
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
-        pytan.utils.check_for_help(kwargs=kwargs)
+        pytan.lib.pytan.utils.check_for_help(kwargs=kwargs)
 
         # the human string describing the sensors/filter that user wants
         # to deploy the action against
@@ -985,12 +974,12 @@ class Handler(object):
         # name of package to deploy with params as {key=value1,key2=value2}
         package = kwargs.get('package', '')
 
-        action_filter_defs = pytan.utils.dehumanize_sensors(action_filters, 'action_filters', True)
-        action_option_defs = pytan.utils.dehumanize_question_options(action_options)
-        package_def = pytan.utils.dehumanize_package(package)
+        action_filter_defs = pytan.lib.pytan.utils.dehumanize_sensors(action_filters, 'action_filters', True)
+        action_option_defs = pytan.lib.pytan.utils.dehumanize_question_options(action_options)
+        package_def = pytan.lib.pytan.utils.dehumanize_package(package)
 
         clean_keys = ['package_def', 'action_filter_defs', 'action_option_defs']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         deploy_result = self._deploy_action(
             action_filter_defs=action_filter_defs,
@@ -1016,7 +1005,7 @@ class Handler(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['pytan_help', 'objtype', 'id', 'obj']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         h = "Issue a GetObject to find saved action objects"
         saved_action_obj = self.get(objtype='saved_action', id=id, pytan_help=h, **clean_kwargs)[0]
@@ -1050,7 +1039,7 @@ class Handler(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['pytan_help', 'objtype', 'id', 'obj']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         h = "Issue a GetObject to find the action object we want to stop"
         action_obj = self.get(objtype='action', id=id, pytan_help=h, **clean_kwargs)[0]
@@ -1071,7 +1060,7 @@ class Handler(object):
             m = (
                 "Action not stopped successfully, json of action after issuing StopAction: {}"
             ).format
-            raise pytan.exceptions.HandlerError(m(self.export_obj(after_action_obj, 'json')))
+            raise pytan.lib.pytan.exceptions.HandlerError(m(self.export_obj(after_action_obj, 'json')))
 
         return action_stop_obj
 
@@ -1109,11 +1098,11 @@ class Handler(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         if shrink:
-            shrunk_obj = pytan.utils.shrink_obj(obj=obj)
+            shrunk_obj = pytan.lib.pytan.utils.shrink_obj(obj=obj)
         else:
             shrunk_obj = obj
 
-        kwargs['export_flag'] = pytan.utils.get_kwargs_int(key='export_flag', default=0, **kwargs)
+        kwargs['export_flag'] = pytan.lib.pytan.utils.get_kwargs_int(key='export_flag', default=0, **kwargs)
 
         if kwargs['export_flag']:
             grd = self.session.get_result_data_sse
@@ -1128,7 +1117,7 @@ class Handler(object):
             kwargs['row_counts_only_flag'] = 1
 
         clean_keys = ['obj']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         # do a getresultdata
         rd = grd(obj=shrunk_obj, **clean_kwargs)
@@ -1168,9 +1157,9 @@ class Handler(object):
 
         See Also
         --------
-        :data:`pytan.constants.SSE_FORMAT_MAP` : maps `sse_format` to an integer for use by the SOAP API
-        :data:`pytan.constants.SSE_RESTRICT_MAP` : maps sse_format integers to supported platform versions
-        :data:`pytan.constants.SSE_CRASH_MAP` : maps platform versions that can cause issues in various scenarios
+        :data:`pytan.lib.pytan.constants.SSE_FORMAT_MAP` : maps `sse_format` to an integer for use by the SOAP API
+        :data:`pytan.lib.pytan.constants.SSE_RESTRICT_MAP` : maps sse_format integers to supported platform versions
+        :data:`pytan.lib.pytan.constants.SSE_CRASH_MAP` : maps platform versions that can cause issues in various scenarios
 
         Returns
         -------
@@ -1205,7 +1194,7 @@ class Handler(object):
         clean_keys = [
             'obj', 'pytan_help', 'handler', 'export_id', 'leading', 'trailing', 'sse_format',
         ]
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         h = "Issue a GetResultData to start a Server Side Export and get an export_id"
         export_id = self.get_result_data(obj=obj, pytan_help=h, **clean_kwargs)
@@ -1221,7 +1210,7 @@ class Handler(object):
                 "Server Side Export Poller failed while waiting for completion, last status: {}"
             ).format
             sse_status = getattr(poller, 'sse_status', 'Unknown')
-            raise pytan.exceptions.ServerSideExportError(m(sse_status))
+            raise pytan.lib.pytan.exceptions.ServerSideExportError(m(sse_status))
 
         export_data = poller.get_sse_data(**clean_kwargs)
 
@@ -1274,7 +1263,7 @@ class Handler(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         if shrink:
-            shrunk_obj = pytan.utils.shrink_obj(obj=obj)
+            shrunk_obj = pytan.lib.pytan.utils.shrink_obj(obj=obj)
         else:
             shrunk_obj = obj
 
@@ -1283,7 +1272,7 @@ class Handler(object):
         kwargs['suppress_object_list'] = kwargs.get('suppress_object_list', 1)
 
         clean_keys = ['obj']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         ri = self.session.get_result_info(obj=shrunk_obj, **clean_kwargs)
         return ri
@@ -1306,22 +1295,22 @@ class Handler(object):
 
         See Also
         --------
-        :data:`pytan.constants.GET_OBJ_MAP` : maps objtype to supported 'create_json' types
+        :data:`pytan.lib.pytan.constants.GET_OBJ_MAP` : maps objtype to supported 'create_json' types
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
-        obj_map = pytan.utils.get_obj_map(objtype=objtype)
+        obj_map = pytan.lib.pytan.utils.get_obj_map(objtype=objtype)
 
         create_json_ok = obj_map['create_json']
 
         if not create_json_ok:
             json_createable = ', '.join([
-                x for x, y in pytan.constants.GET_OBJ_MAP.items() if y['create_json']
+                x for x, y in pytan.lib.pytan.constants.GET_OBJ_MAP.items() if y['create_json']
             ])
             m = "{} is not a json createable object! Supported objects: {}".format
-            raise pytan.exceptions.HandlerError(m(objtype, json_createable))
+            raise pytan.lib.pytan.exceptions.HandlerError(m(objtype, json_createable))
 
-        add_obj = pytan.utils.load_taniumpy_from_json(json_file=json_file)
+        add_obj = pytan.lib.pytan.utils.load_taniumpy_from_json(json_file=json_file)
 
         if getattr(add_obj, '_list_properties', ''):
             obj_list = [x for x in add_obj]
@@ -1340,13 +1329,13 @@ class Handler(object):
         else:
             all_type = obj_map['all']
 
-        ret = pytan.utils.get_taniumpy_obj(obj_map=all_type)()
+        ret = pytan.lib.pytan.utils.get_taniumpy_obj(obj_map=all_type)()
 
         h = "Issue an AddObject to add an object"
         kwargs['pytan_help'] = kwargs.get('pytan_help', h)
 
         clean_keys = ['obj']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         for x in obj_list:
             try:
@@ -1355,7 +1344,7 @@ class Handler(object):
                 m = (
                     "Failure while importing {}: {}\nJSON Dump of object: {}"
                 ).format
-                raise pytan.exceptions.HandlerError(m(x, e, x.to_json(x)))
+                raise pytan.lib.pytan.exceptions.HandlerError(m(x, e, x.to_json(x)))
 
             m = "New {} (ID: {}) created successfully!".format
             self.mylog.info(m(list_obj, getattr(list_obj, 'id', 'Unknown')))
@@ -1384,12 +1373,12 @@ class Handler(object):
         kwargs['pytan_help'] = kwargs.get('pytan_help', h)
 
         clean_keys = ['obj', 'p']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         plugin_result = self.session.run_plugin(obj=obj, **clean_kwargs)
 
         # zip up the sql results into a list of python dictionaries
-        sql_zipped = pytan.utils.plugin_zip(p=plugin_result)
+        sql_zipped = pytan.lib.pytan.utils.plugin_zip(p=plugin_result)
 
         # return the plugin result and the python dictionary of results
         return plugin_result, sql_zipped
@@ -1420,7 +1409,7 @@ class Handler(object):
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs)
 
         # get the ID for the group if a name was passed in
         if group:
@@ -1496,7 +1485,7 @@ class Handler(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['obj', 'name', 'pytan_help']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         dashboards_to_del = self.get_dashboards(name=name, **clean_kwargs)[1]
 
@@ -1539,7 +1528,7 @@ class Handler(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['obj', 'name', 'pytan_help']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         # create the plugin parent
         plugin = taniumpy.Plugin()
@@ -1555,7 +1544,7 @@ class Handler(object):
             sql_zipped = [x for x in sql_zipped if x['name'] == name]
             if not sql_zipped:
                 m = "No dashboards found that match name: {!r}".format
-                raise pytan.exceptions.NotFoundError(m(name))
+                raise pytan.lib.pytan.exceptions.NotFoundError(m(name))
 
         # return the plugin result and the python dictionary of results
         return plugin_result, sql_zipped
@@ -1570,7 +1559,7 @@ class Handler(object):
 
         Raises
         ------
-        pytan.exceptions.HandlerError : :exc:`pytan.utils.pytan.exceptions.HandlerError`
+        pytan.lib.pytan.exceptions.HandlerError : :exc:`pytan.lib.pytan.utils.pytan.lib.pytan.exceptions.HandlerError`
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
@@ -1578,7 +1567,7 @@ class Handler(object):
             "Sensor creation not supported via PyTan as of yet, too complex\n"
             "Use create_sensor_from_json() instead!"
         )
-        raise pytan.exceptions.HandlerError(m)
+        raise pytan.lib.pytan.exceptions.HandlerError(m)
 
     def create_package(self, name, command, display_name='', file_urls=[],
                        command_timeout_seconds=600, expire_seconds=600, parameters_json_file='',
@@ -1640,18 +1629,18 @@ class Handler(object):
 
         See Also
         --------
-        :data:`pytan.constants.FILTER_MAPS` : valid filters for verify_filters
-        :data:`pytan.constants.OPTION_MAPS` : valid options for verify_filter_options
+        :data:`pytan.lib.pytan.constants.FILTER_MAPS` : valid filters for verify_filters
+        :data:`pytan.lib.pytan.constants.OPTION_MAPS` : valid options for verify_filter_options
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
-        pytan.utils.check_for_help(kwargs=kwargs)
+        pytan.lib.pytan.utils.check_for_help(kwargs=kwargs)
 
         clean_keys = ['obj', 'pytan_help', 'defs']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         metadata = kwargs.get('metadata', [])
-        metadatalist_obj = pytan.utils.build_metadatalist_obj(properties=metadata)
+        metadatalist_obj = pytan.lib.pytan.utils.build_metadatalist_obj(properties=metadata)
 
         # bare minimum arguments for new package: name, command
         add_package_obj = taniumpy.PackageSpec()
@@ -1665,14 +1654,14 @@ class Handler(object):
 
         # VERIFY FILTERS
         if verify_filters:
-            verify_filter_defs = pytan.utils.dehumanize_question_filters(
+            verify_filter_defs = pytan.lib.pytan.utils.dehumanize_question_filters(
                 question_filters=verify_filters
             )
-            verify_option_defs = pytan.utils.dehumanize_question_options(
+            verify_option_defs = pytan.lib.pytan.utils.dehumanize_question_options(
                 question_options=verify_filter_options
             )
             verify_filter_defs = self._get_sensor_defs(defs=verify_filter_defs, **clean_kwargs)
-            add_verify_group = pytan.utils.build_group_obj(
+            add_verify_group = pytan.lib.pytan.utils.build_group_obj(
                 q_filter_defs=verify_filter_defs, q_option_defs=verify_option_defs
             )
             h = "Issue an AddObject to add a Group object for this package"
@@ -1685,7 +1674,7 @@ class Handler(object):
 
         # PARAMETERS
         if parameters_json_file:
-            add_package_obj.parameter_definition = pytan.utils.load_param_json_file(
+            add_package_obj.parameter_definition = pytan.lib.pytan.utils.load_param_json_file(
                 parameters_json_file=parameters_json_file
             )
 
@@ -1748,16 +1737,16 @@ class Handler(object):
 
         See Also
         --------
-        :data:`pytan.constants.FILTER_MAPS` : valid filters for filters
-        :data:`pytan.constants.OPTION_MAPS` : valid options for filter_options
+        :data:`pytan.lib.pytan.constants.FILTER_MAPS` : valid filters for filters
+        :data:`pytan.lib.pytan.constants.OPTION_MAPS` : valid options for filter_options
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
-        pytan.utils.check_for_help(kwargs=kwargs)
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs)
+        pytan.lib.pytan.utils.check_for_help(kwargs=kwargs)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs)
 
-        filter_defs = pytan.utils.dehumanize_question_filters(question_filters=filters)
-        option_defs = pytan.utils.dehumanize_question_options(question_options=filter_options)
+        filter_defs = pytan.lib.pytan.utils.dehumanize_question_filters(question_filters=filters)
+        option_defs = pytan.lib.pytan.utils.dehumanize_question_options(question_options=filter_options)
 
         h = (
             "Issue a GetObject to get the full object of specified sensors for inclusion in a "
@@ -1765,7 +1754,7 @@ class Handler(object):
         )
         filter_defs = self._get_sensor_defs(defs=filter_defs, pytan_help=h, **clean_kwargs)
 
-        add_group_obj = pytan.utils.build_group_obj(
+        add_group_obj = pytan.lib.pytan.utils.build_group_obj(
             q_filter_defs=filter_defs, q_option_defs=option_defs,
         )
         add_group_obj.name = groupname
@@ -1806,7 +1795,7 @@ class Handler(object):
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs)
 
         # get the ID for the group if a name was passed in
         if group:
@@ -1821,7 +1810,7 @@ class Handler(object):
         else:
             rolelist_obj = taniumpy.RoleList()
 
-        metadatalist_obj = pytan.utils.build_metadatalist_obj(
+        metadatalist_obj = pytan.lib.pytan.utils.build_metadatalist_obj(
             properties=properties, nameprefix='TConsole.User.Property',
         )
         add_user_obj = taniumpy.User()
@@ -1870,7 +1859,7 @@ class Handler(object):
         if regex:
             url = 'regex:' + url
 
-        metadatalist_obj = pytan.utils.build_metadatalist_obj(
+        metadatalist_obj = pytan.lib.pytan.utils.build_metadatalist_obj(
             properties=properties, nameprefix='TConsole.WhitelistedURL',
         )
 
@@ -1879,7 +1868,7 @@ class Handler(object):
         add_url_obj.download_seconds = download_seconds
         add_url_obj.metadata = metadatalist_obj
 
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs)
 
         h = "Issue an AddObject to add a WhitelistedURL object"
         url_obj = self._add(obj=add_url_obj, pytan_help=h, **clean_kwargs)
@@ -1905,22 +1894,22 @@ class Handler(object):
 
         See Also
         --------
-        :data:`pytan.constants.GET_OBJ_MAP` : maps objtype to supported 'search' keys
+        :data:`pytan.lib.pytan.constants.GET_OBJ_MAP` : maps objtype to supported 'search' keys
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
-        obj_map = pytan.utils.get_obj_map(objtype=objtype)
+        obj_map = pytan.lib.pytan.utils.get_obj_map(objtype=objtype)
 
         delete_ok = obj_map['delete']
 
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs)
 
         if not delete_ok:
             deletable = ', '.join([
-                x for x, y in pytan.constants.GET_OBJ_MAP.items() if y['delete']
+                x for x, y in pytan.lib.pytan.constants.GET_OBJ_MAP.items() if y['delete']
             ])
             m = "{} is not a deletable object! Deletable objects: {}".format
-            raise pytan.exceptions.HandlerError(m(objtype, deletable))
+            raise pytan.lib.pytan.exceptions.HandlerError(m(objtype, deletable))
 
         h = "Issue a GetObject to find the object to be deleted"
         objs_to_del = self.get(objtype=objtype, pytan_help=h, **clean_kwargs)
@@ -1990,7 +1979,7 @@ class Handler(object):
 
         See Also
         --------
-        :data:`pytan.constants.EXPORT_MAPS` : maps the type `obj` to `export_format` and the optional args supported for each
+        :data:`pytan.lib.pytan.constants.EXPORT_MAPS` : maps the type `obj` to `export_format` and the optional args supported for each
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
@@ -2002,7 +1991,7 @@ class Handler(object):
 
         # see if supplied obj is a supported object type
         type_match = [
-            x for x in pytan.constants.EXPORT_MAPS if isinstance(obj, getattr(taniumpy, x))
+            x for x in pytan.lib.pytan.constants.EXPORT_MAPS if isinstance(obj, getattr(taniumpy, x))
         ]
 
         if not type_match:
@@ -2011,24 +2000,24 @@ class Handler(object):
             ).format
 
             # build a list of supported object types
-            supp_types = ', '.join(pytan.constants.EXPORT_MAPS.keys())
-            raise pytan.exceptions.HandlerError(err(objtype, supp_types))
+            supp_types = ', '.join(pytan.lib.pytan.constants.EXPORT_MAPS.keys())
+            raise pytan.lib.pytan.exceptions.HandlerError(err(objtype, supp_types))
 
         # get the export formats for this obj type
-        export_formats = pytan.constants.EXPORT_MAPS.get(type_match[0], '')
+        export_formats = pytan.lib.pytan.constants.EXPORT_MAPS.get(type_match[0], '')
 
         if export_format not in export_formats:
             err = (
                 "{!r} not a supported export format for {}, must be one of: {}"
             ).format(export_format, objclassname, ', '.join(export_formats))
-            raise pytan.exceptions.HandlerError(err)
+            raise pytan.lib.pytan.exceptions.HandlerError(err)
 
         # perform validation on optional kwargs, if they exist
         opt_keys = export_formats.get(export_format, [])
 
         for opt_key in opt_keys:
             check_args = dict(opt_key.items() + {'d': kwargs}.items())
-            pytan.utils.check_dictkey(**check_args)
+            pytan.lib.pytan.utils.check_dictkey(**check_args)
 
         # filter out the kwargs that are specific to this obj type and format type
         format_kwargs = {
@@ -2044,7 +2033,7 @@ class Handler(object):
             result = class_handler(obj=obj, export_format=export_format, **format_kwargs)
         else:
             err = "{!r} not supported by Handler!".format
-            raise pytan.exceptions.HandlerError(err(objclassname))
+            raise pytan.lib.pytan.exceptions.HandlerError(err(objclassname))
 
         return result
 
@@ -2075,7 +2064,7 @@ class Handler(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         if report_file is None:
-            report_file = 'pytan_report_{}.txt'.format(pytan.utils.get_now())
+            report_file = 'pytan_report_{}.txt'.format(pytan.lib.pytan.utils.get_now())
 
         # try to get report_dir from the report_file
         report_dir = os.path.dirname(report_file)
@@ -2186,13 +2175,13 @@ class Handler(object):
 
         if not report_file:
             report_file = "{}_{}.{}".format(
-                type(obj).__name__, pytan.utils.get_now(), export_format,
+                type(obj).__name__, pytan.lib.pytan.utils.get_now(), export_format,
             )
             m = "No report file name supplied, generated name: {!r}".format
             self.mylog.debug(m(report_file))
 
         clean_keys = ['obj', 'export_format', 'contents', 'report_file']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         # get the results of exporting the object
         contents = self.export_obj(obj=obj, export_format=export_format, **clean_kwargs)
@@ -2218,7 +2207,7 @@ class Handler(object):
 
         See Also
         --------
-        :data:`pytan.constants.GET_OBJ_MAP` : maps objtype to supported 'search' keys
+        :data:`pytan.lib.pytan.constants.GET_OBJ_MAP` : maps objtype to supported 'search' keys
         :func:`pytan.handler.Handler._get_multi` : private method used to get multiple items
         :func:`pytan.handler.Handler._get_single` : private method used to get singular items
         """
@@ -2228,12 +2217,12 @@ class Handler(object):
         kwargs['pytan_help'] = kwargs.get('pytan_help', h)
 
         clean_keys = ['obj', 'objtype', 'obj_map']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         err_keys = ['pytan_help']
-        err_args = pytan.utils.clean_kwargs(kwargs=kwargs, keys=err_keys)
+        err_args = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=err_keys)
 
-        obj_map = pytan.utils.get_obj_map(objtype=objtype)
+        obj_map = pytan.lib.pytan.utils.get_obj_map(objtype=objtype)
 
         manual_search = obj_map['manual']
         api_attrs = obj_map['search']
@@ -2253,7 +2242,7 @@ class Handler(object):
                     continue
                 if not hasattr(all_objs[0], k):
                     continue
-                if not pytan.utils.is_list(v):
+                if not pytan.lib.pytan.utils.is_list(v):
                     v = [v]
                 for aobj in all_objs:
                     aobj_val = getattr(aobj, k)
@@ -2264,7 +2253,7 @@ class Handler(object):
 
             if not return_objs:
                 err = "No results found searching for {} with {}!!".format
-                raise pytan.exceptions.HandlerError(err(objtype, err_args))
+                raise pytan.lib.pytan.exceptions.HandlerError(err(objtype, err_args))
 
             return return_objs
 
@@ -2272,7 +2261,7 @@ class Handler(object):
         # but no filters supplied in kwargs, raise
         if not any(api_kwattrs):
             err = "Getting a {} requires at least one filter: {}".format
-            raise pytan.exceptions.HandlerError(err(objtype, api_attrs))
+            raise pytan.lib.pytan.exceptions.HandlerError(err(objtype, api_attrs))
 
         # if there is a multi in obj_map, that means we can pass a list
         # type to the taniumpy. the list will have an entry for each api_kw
@@ -2285,7 +2274,7 @@ class Handler(object):
             return self._get_single(obj_map=obj_map, **clean_kwargs)
 
         err = "No single or multi search defined for {}".format
-        raise pytan.exceptions.HandlerError(err(objtype))
+        raise pytan.lib.pytan.exceptions.HandlerError(err(objtype))
 
     def get_all(self, objtype, **kwargs):
         """Get all objects of a type
@@ -2302,7 +2291,7 @@ class Handler(object):
 
         See Also
         --------
-        :data:`pytan.constants.GET_OBJ_MAP` : maps objtype to supported 'search' keys
+        :data:`pytan.lib.pytan.constants.GET_OBJ_MAP` : maps objtype to supported 'search' keys
         :func:`pytan.handler.Handler._find` : private method used to find items
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
@@ -2311,12 +2300,12 @@ class Handler(object):
         kwargs['pytan_help'] = kwargs.get('pytan_help', h)
 
         clean_keys = ['obj', 'objtype', 'obj_map']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
-        obj_map = pytan.utils.get_obj_map(objtype=objtype)
+        obj_map = pytan.lib.pytan.utils.get_obj_map(objtype=objtype)
 
         all_type = obj_map['all']
-        api_obj_all = pytan.utils.get_taniumpy_obj(obj_map=all_type)()
+        api_obj_all = pytan.lib.pytan.utils.get_taniumpy_obj(obj_map=all_type)()
 
         found = self._find(obj=api_obj_all, **clean_kwargs)
         return found
@@ -2347,7 +2336,7 @@ class Handler(object):
         kwargs['suppress_object_list'] = kwargs.get('suppress_object_list', 1)
 
         clean_keys = ['obj', 'objtype', 'obj_map']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         h = "Issue an AddObject to add an object"
         clean_kwargs['pytan_help'] = clean_kwargs.get('pytan_help', h)
@@ -2356,7 +2345,7 @@ class Handler(object):
             added_obj = self.session.add(obj=obj, **clean_kwargs)
         except Exception as e:
             err = "Error while trying to add object '{}': {}!!".format
-            raise pytan.exceptions.HandlerError(err(search_str, e))
+            raise pytan.lib.pytan.exceptions.HandlerError(err(search_str, e))
 
         h = "Issue a GetObject on the recently added object in order to get the full object"
         clean_kwargs['pytan_help'] = h
@@ -2366,7 +2355,7 @@ class Handler(object):
         except Exception as e:
             self.mylog.error(e)
             err = "Error while trying to find recently added object {}!!".format
-            raise pytan.exceptions.HandlerError(err(search_str))
+            raise pytan.lib.pytan.exceptions.HandlerError(err(search_str))
 
         self.mylog.debug("Added object {}".format(added_obj))
         return added_obj
@@ -2396,7 +2385,7 @@ class Handler(object):
         kwargs['suppress_object_list'] = kwargs.get('suppress_object_list', 1)
 
         clean_keys = ['obj', 'objtype', 'obj_map']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         h = "Issue a GetObject to find an object"
         clean_kwargs['pytan_help'] = clean_kwargs.get('pytan_help', h)
@@ -2406,11 +2395,11 @@ class Handler(object):
         except Exception as e:
             self.mylog.debug(e)
             err = "No results found searching for {} (error: {})!!".format
-            raise pytan.exceptions.HandlerError(err(search_str, e))
+            raise pytan.lib.pytan.exceptions.HandlerError(err(search_str, e))
 
-        if pytan.utils.empty_obj(found):
+        if pytan.lib.pytan.utils.empty_obj(found):
             err = "No results found searching for {}!!".format
-            raise pytan.exceptions.HandlerError(err(search_str))
+            raise pytan.lib.pytan.exceptions.HandlerError(err(search_str))
 
         self.mylog.debug("Found {}".format(found))
         return found
@@ -2438,7 +2427,7 @@ class Handler(object):
         single_type = obj_map['single']
 
         # create a list object to append our searches to
-        api_obj_multi = pytan.utils.get_taniumpy_obj(obj_map=multi_type)()
+        api_obj_multi = pytan.lib.pytan.utils.get_taniumpy_obj(obj_map=multi_type)()
 
         for k, v in api_kw.iteritems():
             if v and k not in obj_map['search']:
@@ -2447,18 +2436,18 @@ class Handler(object):
             if not v:
                 continue  # if v empty, skip
 
-            if pytan.utils.is_list(v):
+            if pytan.lib.pytan.utils.is_list(v):
                 for i in v:
-                    api_obj_single = pytan.utils.get_taniumpy_obj(obj_map=single_type)()
+                    api_obj_single = pytan.lib.pytan.utils.get_taniumpy_obj(obj_map=single_type)()
                     setattr(api_obj_single, k, i)
                     api_obj_multi.append(api_obj_single)
             else:
-                api_obj_single = pytan.utils.get_taniumpy_obj(obj_map=single_type)()
+                api_obj_single = pytan.lib.pytan.utils.get_taniumpy_obj(obj_map=single_type)()
                 setattr(api_obj_single, k, v)
                 api_obj_multi.append(api_obj_single)
 
         clean_keys = ['obj']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         # find the multi list object
         found = self._find(obj=api_obj_multi, **clean_kwargs)
@@ -2489,10 +2478,10 @@ class Handler(object):
         else:
             all_type = obj_map['all']
 
-        found = pytan.utils.get_taniumpy_obj(obj_map=all_type)()
+        found = pytan.lib.pytan.utils.get_taniumpy_obj(obj_map=all_type)()
 
         clean_keys = ['obj_map', 'k', 'v']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         for k, v in api_kw.iteritems():
             if v and k not in obj_map['search']:
@@ -2501,7 +2490,7 @@ class Handler(object):
             if not v:
                 continue  # if v empty, skip
 
-            if pytan.utils.is_list(v):
+            if pytan.lib.pytan.utils.is_list(v):
                 for i in v:
                     for x in self._single_find(obj_map=obj_map, k=k, v=i, **clean_kwargs):
                         found.append(x)
@@ -2533,12 +2522,12 @@ class Handler(object):
         found = []
 
         single_type = obj_map['single']
-        api_obj_single = pytan.utils.get_taniumpy_obj(obj_map=single_type)()
+        api_obj_single = pytan.lib.pytan.utils.get_taniumpy_obj(obj_map=single_type)()
 
         setattr(api_obj_single, k, v)
 
         clean_keys = ['obj']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         obj_ret = self._find(obj=api_obj_single, **clean_kwargs)
 
@@ -2565,13 +2554,13 @@ class Handler(object):
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
-        s_obj_map = pytan.constants.GET_OBJ_MAP['sensor']
+        s_obj_map = pytan.lib.pytan.constants.GET_OBJ_MAP['sensor']
         search_keys = s_obj_map['search']
 
         kwargs['include_hidden_flag'] = kwargs.get('include_hidden_flag', 0)
 
         clean_keys = ['objtype']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         for d in defs:
             def_search = {s: d.get(s, '') for s in search_keys if d.get(s, '')}
@@ -2602,13 +2591,13 @@ class Handler(object):
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
-        s_obj_map = pytan.constants.GET_OBJ_MAP['package']
+        s_obj_map = pytan.lib.pytan.constants.GET_OBJ_MAP['package']
         search_keys = s_obj_map['search']
 
         kwargs['include_hidden_flag'] = kwargs.get('include_hidden_flag', 0)
 
         clean_keys = ['objtype']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         def_search = {s: d.get(s, '') for s in search_keys if d.get(s, '')}
         def_search.update(clean_kwargs)
@@ -2645,13 +2634,13 @@ class Handler(object):
         format_handler = getattr(self, format_method_str, '')
 
         clean_keys = ['obj']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         if format_handler:
             result = format_handler(obj=obj, **clean_kwargs)
         else:
             err = "{!r} not coded for in Handler!".format
-            raise pytan.exceptions.HandlerError(err(export_format))
+            raise pytan.lib.pytan.exceptions.HandlerError(err(export_format))
 
         return result
 
@@ -2682,7 +2671,7 @@ class Handler(object):
         sensors = kwargs.get('sensors', []) or getattr(obj, 'sensors', [])
 
         clean_keys = ['objtype', 'hash', 'obj']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         if header_add_sensor and export_format == 'csv':
             clean_kwargs['sensors'] = sensors
@@ -2703,7 +2692,7 @@ class Handler(object):
             result = format_handler(obj=obj, **clean_kwargs)
         else:
             err = "{!r} not coded for in Handler!".format
-            raise pytan.exceptions.HandlerError(err(export_format))
+            raise pytan.lib.pytan.exceptions.HandlerError(err(export_format))
 
         return result
 
@@ -2724,12 +2713,12 @@ class Handler(object):
 
         if not hasattr(obj, 'write_csv'):
             err = "{!r} has no write_csv() method!".format
-            raise pytan.exceptions.HandlerError(err(obj))
+            raise pytan.lib.pytan.exceptions.HandlerError(err(obj))
 
         out = io.BytesIO()
 
         clean_keys = ['fd', 'val']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         if getattr(obj, '_list_properties', ''):
             result = obj.write_csv(fd=out, val=list(obj), **clean_kwargs)
@@ -2756,10 +2745,10 @@ class Handler(object):
 
         if not hasattr(obj, 'to_json'):
             err = "{!r} has no to_json() method!".format
-            raise pytan.exceptions.HandlerError(err(obj))
+            raise pytan.lib.pytan.exceptions.HandlerError(err(obj))
 
         clean_keys = ['jsonable']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         result = obj.to_json(jsonable=obj, **clean_kwargs)
         return result
@@ -2787,12 +2776,12 @@ class Handler(object):
             raw_xml = obj._RAW_XML
         else:
             err = "{!r} has no toSOAPBody() method or _RAW_XML attribute!".format
-            raise pytan.exceptions.HandlerError(err(obj))
+            raise pytan.lib.pytan.exceptions.HandlerError(err(obj))
 
         clean_keys = ['x']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
-        result = pytan.utils.xml_pretty(x=raw_xml, **clean_kwargs)
+        result = pytan.lib.pytan.utils.xml_pretty(x=raw_xml, **clean_kwargs)
         return result
 
     def _deploy_action(self, run=False, get_results=True, **kwargs):
@@ -2826,7 +2815,7 @@ class Handler(object):
             * expire action N seconds from now, will be derived from package if not supplied
         run : bool, optional
             * default: False
-            * False: just ask the question that pertains to verify action, export the results to CSV, and raise pytan.exceptions.RunFalse -- does not deploy the action
+            * False: just ask the question that pertains to verify action, export the results to CSV, and raise pytan.lib.pytan.exceptions.RunFalse -- does not deploy the action
             * True: actually deploy the action
         get_results : bool, optional
             * default: True
@@ -2887,8 +2876,8 @@ class Handler(object):
 
         See Also
         --------
-        :data:`pytan.constants.FILTER_MAPS` : valid filter dictionaries for filters
-        :data:`pytan.constants.OPTION_MAPS` : valid option dictionaries for options
+        :data:`pytan.lib.pytan.constants.FILTER_MAPS` : valid filter dictionaries for filters
+        :data:`pytan.lib.pytan.constants.OPTION_MAPS` : valid option dictionaries for options
 
         Notes
         -----
@@ -2904,7 +2893,7 @@ class Handler(object):
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
-        pytan.utils.check_for_help(kwargs=kwargs)
+        pytan.lib.pytan.utils.check_for_help(kwargs=kwargs)
 
         clean_keys = [
             'defs',
@@ -2921,7 +2910,7 @@ class Handler(object):
             'handler',
         ]
 
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         if not self.session.platform_is_6_5(**kwargs):
             objtype = taniumpy.Action
@@ -2932,28 +2921,28 @@ class Handler(object):
             objlisttype = taniumpy.SavedActionList
             force_start_time = False
 
-        package_def = pytan.utils.parse_defs(
+        package_def = pytan.lib.pytan.utils.parse_defs(
             defname='package_def',
             deftypes=['dict()'],
             empty_ok=False,
             **clean_kwargs
         )
-        action_filter_defs = pytan.utils.parse_defs(
+        action_filter_defs = pytan.lib.pytan.utils.parse_defs(
             defname='action_filter_defs',
             deftypes=['list()', 'str()', 'dict()'],
             strconv='name',
             empty_ok=True,
             **clean_kwargs
         )
-        action_option_defs = pytan.utils.parse_defs(
+        action_option_defs = pytan.lib.pytan.utils.parse_defs(
             defname='action_option_defs',
             deftypes=['dict()'],
             empty_ok=True,
             **clean_kwargs
         )
 
-        pytan.utils.val_package_def(package_def=package_def)
-        pytan.utils.val_sensor_defs(sensor_defs=action_filter_defs)
+        pytan.lib.pytan.utils.val_package_def(package_def=package_def)
+        pytan.lib.pytan.utils.val_sensor_defs(sensor_defs=action_filter_defs)
 
         package_def = self._get_package_def(d=package_def, **clean_kwargs)
         h = (
@@ -2964,11 +2953,11 @@ class Handler(object):
             defs=action_filter_defs, pytan_help=h, **clean_kwargs
         )
 
-        start_seconds_from_now = pytan.utils.get_kwargs_int(
+        start_seconds_from_now = pytan.lib.pytan.utils.get_kwargs_int(
             key='start_seconds_from_now', default=0, **clean_kwargs
         )
 
-        expire_seconds = pytan.utils.get_kwargs_int(key='expire_seconds', **clean_kwargs)
+        expire_seconds = pytan.lib.pytan.utils.get_kwargs_int(key='expire_seconds', **clean_kwargs)
 
         action_name_default = "API Deploy {0.name}".format(package_def['package_obj'])
         action_name = kwargs.get('action_name', action_name_default)
@@ -3001,7 +2990,7 @@ class Handler(object):
         """
         if not run:
             pre_action_sensors = ['Computer Name', 'Online, that =:True']
-            pre_action_sensor_defs = pytan.utils.dehumanize_sensors(sensors=pre_action_sensors)
+            pre_action_sensor_defs = pytan.lib.pytan.utils.dehumanize_sensors(sensors=pre_action_sensors)
 
             q_clean_keys = [
                 'sensor_defs',
@@ -3011,7 +3000,7 @@ class Handler(object):
                 'pytan_help',
                 'get_results',
             ]
-            q_clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=q_clean_keys)
+            q_clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=q_clean_keys)
 
             h = (
                 "Ask a question to determine the number of systems this action would affect if it "
@@ -3030,7 +3019,7 @@ class Handler(object):
 
             if passed_count == 0:
                 m = "Number of systems that match the action filters provided is zero!"
-                raise pytan.exceptions.HandlerError(m)
+                raise pytan.lib.pytan.exceptions.HandlerError(m)
 
             default_format = 'csv'
             export_format = kwargs.get('export_format', default_format)
@@ -3043,7 +3032,7 @@ class Handler(object):
                 'export_format',
                 'prefix',
             ]
-            e_clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=e_clean_keys)
+            e_clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=e_clean_keys)
             e_clean_kwargs['obj'] = pre_action_question['question_results']
             e_clean_kwargs['export_format'] = export_format
             e_clean_kwargs['prefix'] = export_prefix
@@ -3054,17 +3043,17 @@ class Handler(object):
                 "View and verify the contents of {} (length: {} bytes)\n"
                 "Re-run this deploy action with run=True after verifying"
             ).format
-            raise pytan.exceptions.RunFalse(m(report_path, len(result)))
+            raise pytan.lib.pytan.exceptions.RunFalse(m(report_path, len(result)))
 
         # BUILD THE PACKAGE OBJECT TO BE ADDED TO THE ACTION
-        add_package_obj = pytan.utils.copy_package_obj_for_action(obj=package_def['package_obj'])
+        add_package_obj = pytan.lib.pytan.utils.copy_package_obj_for_action(obj=package_def['package_obj'])
 
         # if source_id is specified, a new package will be created with the parameters
         # for this action embedded into it - specifying hidden = 1 will ensure the new package
         # is hidden
         add_package_obj.hidden_flag = 1
 
-        param_objlist = pytan.utils.build_param_objlist(
+        param_objlist = pytan.lib.pytan.utils.build_param_objlist(
             obj=package_def['package_obj'],
             user_params=package_def['params'],
             delim='',
@@ -3106,7 +3095,7 @@ class Handler(object):
             add_obj.action_group = action_group_obj
 
         if action_filter_defs or action_option_defs:
-            targetgroup_obj = pytan.utils.build_group_obj(
+            targetgroup_obj = pytan.lib.pytan.utils.build_group_obj(
                 q_filter_defs=action_filter_defs, q_option_defs=action_option_defs,
             )
             add_obj.target_group = targetgroup_obj
@@ -3114,12 +3103,12 @@ class Handler(object):
             targetgroup_obj = None
 
         if start_seconds_from_now:
-            add_obj.start_time = pytan.utils.seconds_from_now(secs=start_seconds_from_now)
+            add_obj.start_time = pytan.lib.pytan.utils.seconds_from_now(secs=start_seconds_from_now)
 
         if force_start_time and not add_obj.start_time:
             if not start_seconds_from_now:
                 start_seconds_from_now = 1
-            add_obj.start_time = pytan.utils.seconds_from_now(secs=start_seconds_from_now)
+            add_obj.start_time = pytan.lib.pytan.utils.seconds_from_now(secs=start_seconds_from_now)
 
         if package_def['package_obj'].expire_seconds:
             add_obj.expire_seconds = package_def['package_obj'].expire_seconds
@@ -3274,12 +3263,12 @@ class Handler(object):
 
         See Also
         --------
-        :data:`pytan.constants.FILTER_MAPS` : valid filter dictionaries for filters
-        :data:`pytan.constants.OPTION_MAPS` : valid option dictionaries for options
+        :data:`pytan.lib.pytan.constants.FILTER_MAPS` : valid filter dictionaries for filters
+        :data:`pytan.lib.pytan.constants.OPTION_MAPS` : valid option dictionaries for options
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
-        pytan.utils.check_for_help(kwargs=kwargs)
+        pytan.lib.pytan.utils.check_for_help(kwargs=kwargs)
 
         clean_keys = [
             'defs',
@@ -3296,10 +3285,10 @@ class Handler(object):
             'handler',
             'sse',
         ]
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         # get our defs from kwargs and churn them into what we want
-        sensor_defs = pytan.utils.parse_defs(
+        sensor_defs = pytan.lib.pytan.utils.parse_defs(
             defname='sensor_defs',
             deftypes=['list()', 'str()', 'dict()'],
             strconv='name',
@@ -3307,14 +3296,14 @@ class Handler(object):
             **clean_kwargs
         )
 
-        q_filter_defs = pytan.utils.parse_defs(
+        q_filter_defs = pytan.lib.pytan.utils.parse_defs(
             defname='question_filter_defs',
             deftypes=['list()', 'dict()'],
             empty_ok=True,
             **clean_kwargs
         )
 
-        q_option_defs = pytan.utils.parse_defs(
+        q_option_defs = pytan.lib.pytan.utils.parse_defs(
             defname='question_option_defs',
             deftypes=['dict()'],
             empty_ok=True,
@@ -3324,13 +3313,13 @@ class Handler(object):
         sse = kwargs.get('sse', False)
         clean_kwargs['sse_format'] = clean_kwargs.get('sse_format', 'xml_obj')
 
-        max_age_seconds = pytan.utils.get_kwargs_int(
+        max_age_seconds = pytan.lib.pytan.utils.get_kwargs_int(
             key='max_age_seconds', default=600, **clean_kwargs
         )
 
         # do basic validation of our defs
-        pytan.utils.val_sensor_defs(sensor_defs=sensor_defs)
-        pytan.utils.val_q_filter_defs(q_filter_defs=q_filter_defs)
+        pytan.lib.pytan.utils.val_sensor_defs(sensor_defs=sensor_defs)
+        pytan.lib.pytan.utils.val_q_filter_defs(q_filter_defs=q_filter_defs)
 
         # get the sensor objects that are in our defs and add them as d['sensor_obj']
         h = (
@@ -3345,15 +3334,15 @@ class Handler(object):
         q_filter_defs = self._get_sensor_defs(defs=q_filter_defs, pytan_help=h, **clean_kwargs)
 
         # build a SelectList object from our sensor_defs
-        selectlist_obj = pytan.utils.build_selectlist_obj(sensor_defs=sensor_defs)
+        selectlist_obj = pytan.lib.pytan.utils.build_selectlist_obj(sensor_defs=sensor_defs)
 
         # build a Group object from our question filters/options
-        group_obj = pytan.utils.build_group_obj(
+        group_obj = pytan.lib.pytan.utils.build_group_obj(
             q_filter_defs=q_filter_defs, q_option_defs=q_option_defs,
         )
 
         # build a Question object from selectlist_obj and group_obj
-        add_obj = pytan.utils.build_manual_q(selectlist_obj=selectlist_obj, group_obj=group_obj)
+        add_obj = pytan.lib.pytan.utils.build_manual_q(selectlist_obj=selectlist_obj, group_obj=group_obj)
 
         add_obj.max_age_seconds = max_age_seconds
 
@@ -3436,10 +3425,10 @@ class Handler(object):
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
-        if sse_format_int not in pytan.constants.SSE_RESTRICT_MAP:
+        if sse_format_int not in pytan.lib.pytan.constants.SSE_RESTRICT_MAP:
             return
 
-        restrict_maps = pytan.constants.SSE_RESTRICT_MAP[sse_format_int]
+        restrict_maps = pytan.lib.pytan.constants.SSE_RESTRICT_MAP[sse_format_int]
 
         if not self._version_support_check(v_maps=restrict_maps, **kwargs):
             restrict_maps_txt = '\n'.join([str(x) for x in restrict_maps])
@@ -3451,7 +3440,7 @@ class Handler(object):
 
             m = m(self.session.server_version, sse_format, restrict_maps_txt)
 
-            raise pytan.exceptions.UnsupportedVersionError(m)
+            raise pytan.lib.pytan.exceptions.UnsupportedVersionError(m)
 
     def _resolve_sse_format(self, sse_format, **kwargs):
         """Resolves the server side export format the user supplied to an integer for the API
@@ -3468,14 +3457,14 @@ class Handler(object):
         """
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
-        sse_format_int = [x[-1] for x in pytan.constants.SSE_FORMAT_MAP if sse_format.lower() in x]
+        sse_format_int = [x[-1] for x in pytan.lib.pytan.constants.SSE_FORMAT_MAP if sse_format.lower() in x]
 
         if not sse_format_int:
             m = "Unsupport export format {!r}, must be one of:\n{}".format
             ef_map_txt = '\n'.join(
-                [', '.join(['{!r}'.format(x) for x in y]) for y in pytan.constants.SSE_FORMAT_MAP]
+                [', '.join(['{!r}'.format(x) for x in y]) for y in pytan.lib.pytan.constants.SSE_FORMAT_MAP]
             )
-            raise pytan.exceptions.HandlerError(m(sse_format, ef_map_txt))
+            raise pytan.lib.pytan.exceptions.HandlerError(m(sse_format, ef_map_txt))
 
         sse_format_int = sse_format_int[0]
 
@@ -3495,7 +3484,7 @@ class Handler(object):
         if not self.session.platform_is_6_5(**kwargs):
             m = "Server side export not supported in version: {}".format
             m = m(self.session.server_version)
-            raise pytan.exceptions.UnsupportedVersionError(m)
+            raise pytan.lib.pytan.exceptions.UnsupportedVersionError(m)
 
     def _check_sse_crash_prevention(self, obj, **kwargs):
         """Runs a number of methods used to prevent crashing the platform server when performing server side exports
@@ -3508,9 +3497,9 @@ class Handler(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['obj', 'v_maps', 'ok_version']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
-        restrict_maps = pytan.constants.SSE_CRASH_MAP
+        restrict_maps = pytan.lib.pytan.constants.SSE_CRASH_MAP
 
         ok_version = self._version_support_check(v_maps=restrict_maps, **clean_kwargs)
 
@@ -3518,7 +3507,7 @@ class Handler(object):
         self._check_sse_empty_rs(obj=obj, ok_version=ok_version, **clean_kwargs)
 
     def _check_sse_timing(self, ok_version, **kwargs):
-        """Checks that the last server side export was at least 1 second ago if server version is less than any versions in pytan.constants.SSE_CRASH_MAP
+        """Checks that the last server side export was at least 1 second ago if server version is less than any versions in pytan.lib.pytan.constants.SSE_CRASH_MAP
 
         Parameters
         ----------
@@ -3533,7 +3522,7 @@ class Handler(object):
             last_elapsed = datetime.datetime.utcnow() - last_get_rd_sse
             if last_elapsed.seconds == 0 and not ok_version:
                 m = "You must wait at least one second between server side export requests!".format
-                raise pytan.exceptions.ServerSideExportError(m())
+                raise pytan.lib.pytan.exceptions.ServerSideExportError(m())
 
         self.last_get_rd_sse = datetime.datetime.utcnow()
 
@@ -3550,7 +3539,7 @@ class Handler(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['obj']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         if not ok_version:
             ri = self.get_result_info(obj=obj, **clean_kwargs)
@@ -3558,7 +3547,7 @@ class Handler(object):
                 m = (
                     "No rows available to perform a server side export with, result info: {}"
                 ).format
-                raise pytan.exceptions.ServerSideExportError(m(ri))
+                raise pytan.lib.pytan.exceptions.ServerSideExportError(m(ri))
 
     def _debug_locals(self, fname, flocals):
         """Method to print out locals for a function if self.debug_method_locals is True"""

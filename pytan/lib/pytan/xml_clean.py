@@ -7,9 +7,6 @@ import sys
 import re
 import logging
 
-# disable python from creating .pyc files everywhere
-sys.dont_write_bytecode = True
-
 mylog = logging.getLogger("XMLCleaner")
 
 XML_1_0_VALID_HEX = [

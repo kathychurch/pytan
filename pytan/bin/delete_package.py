@@ -6,28 +6,18 @@
 __author__ = 'Jim Olsen <jim.olsen@tanium.com>'
 __version__ = '2.1.5'
 
-import os
-import sys
-sys.dont_write_bytecode = True
+import pytan.lib.pytan.binsupport as binsupport
 
-my_file = os.path.abspath(sys.argv[0])
-my_name = os.path.splitext(os.path.basename(my_file))[0]
-my_dir = os.path.dirname(my_file)
-parent_dir = os.path.dirname(my_dir)
-lib_dir = os.path.join(parent_dir, 'lib')
-path_adds = [lib_dir]
-[sys.path.append(aa) for aa in path_adds if aa not in sys.path]
+def main():
+    binsupport.version_check(reqver=__version__)
 
-import pytan
-import pytan.binsupport
-
-if __name__ == "__main__":
-    pytan.binsupport.version_check(reqver=__version__)
-
-    parser = pytan.binsupport.setup_delete_object_argparser(obj='package', doc=__doc__)
+    parser = binsupport.setup_delete_object_argparser(obj='package', doc=__doc__)
     args = parser.parse_args()
 
-    handler = pytan.binsupport.process_handler_args(parser=parser, args=args)
-    response = pytan.binsupport.process_delete_object_args(
+    handler = binsupport.process_handler_args(parser=parser, args=args)
+    response = binsupport.process_delete_object_args(
         parser=parser, handler=handler, obj='package', args=args,
     )
+
+if __name__ == "__main__":
+    main()

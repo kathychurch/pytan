@@ -3,10 +3,6 @@
 # Please do not change the two lines above. See PEP 8, PEP 263.
 """Session classes for the :mod:`pytan` module."""
 import sys
-
-# disable python from creating .pyc files everywhere
-sys.dont_write_bytecode = True
-
 import os
 import string
 import logging
@@ -23,17 +19,10 @@ try:
     import xml.etree.cElementTree as ET
 except:
     import xml.etree.ElementTree as ET
-
-my_file = os.path.abspath(__file__)
-my_dir = os.path.dirname(my_file)
-parent_dir = os.path.dirname(my_dir)
-path_adds = [parent_dir]
-[sys.path.insert(0, aa) for aa in path_adds if aa not in sys.path]
-
 import pytan
-from pytan.xml_clean import xml_cleaner
-import requests
-import taniumpy
+from pytan.lib.pytan import xml_clean
+from pytan.lib import requests
+from pytan.lib import taniumpy
 requests.packages.urllib3.disable_warnings()
 
 import sys
@@ -412,7 +401,7 @@ class Session(object):
                 m = (
                     "Unable to establish a persistent session when authenticating with a session!"
                 ).format
-                raise pytan.exceptions.AuthorizationError(m())
+                raise pytan.lib.pytan.exceptions.AuthorizationError(m())
             self._session_id = session_id
         else:
             auth_type = 'username/password'
@@ -423,10 +412,10 @@ class Session(object):
 
         if not session_id:
             if not self._username:
-                raise pytan.exceptions.AuthorizationError("Must supply username")
+                raise pytan.lib.pytan.exceptions.AuthorizationError("Must supply username")
 
             if not self._password:
-                raise pytan.exceptions.AuthorizationError("Must supply password")
+                raise pytan.lib.pytan.exceptions.AuthorizationError("Must supply password")
 
         auth_headers = {}
 
@@ -450,7 +439,7 @@ class Session(object):
             body = self.http_get(**req_args)
         except Exception as e:
             m = "Error while trying to authenticate: {}".format
-            raise pytan.exceptions.AuthorizationError(m(e))
+            raise pytan.lib.pytan.exceptions.AuthorizationError(m(e))
 
         self.session_id = body
         if persistent:
@@ -485,7 +474,7 @@ class Session(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['obj', 'request_body']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         request_body = self._create_get_object_body(obj=obj, **clean_kwargs)
         response_body = self._get_response(request_body=request_body, **clean_kwargs)
@@ -508,7 +497,7 @@ class Session(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['obj', 'request_body']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         request_body = self._create_update_object_body(obj=obj, **clean_kwargs)
         response_body = self._get_response(request_body=request_body, **clean_kwargs)
@@ -531,7 +520,7 @@ class Session(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['obj', 'request_body']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         request_body = self._create_add_object_body(obj=obj, **clean_kwargs)
         response_body = self._get_response(request_body=request_body, **clean_kwargs)
@@ -554,7 +543,7 @@ class Session(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['obj', 'request_body']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         request_body = self._create_delete_object_body(obj=obj, **clean_kwargs)
         response_body = self._get_response(request_body=request_body, **clean_kwargs)
@@ -577,7 +566,7 @@ class Session(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['obj', 'request_body']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         request_body = self._create_run_plugin_object_body(obj=obj, **clean_kwargs)
         response_body = self._get_response(request_body=request_body, **clean_kwargs)
@@ -600,7 +589,7 @@ class Session(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['obj', 'request_body']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         request_body = self._create_get_result_info_body(obj=obj, **clean_kwargs)
         response_body = self._get_response(request_body=request_body, **clean_kwargs)
@@ -629,7 +618,7 @@ class Session(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['obj', 'request_body']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         request_body = self._create_get_result_data_body(obj=obj, **clean_kwargs)
         response_body = self._get_response(request_body=request_body, **clean_kwargs)
@@ -658,7 +647,7 @@ class Session(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['obj', 'request_body']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         request_body = self._create_get_result_data_body(obj=obj, **clean_kwargs)
         response_body = self._get_response(request_body=request_body, **clean_kwargs)
@@ -944,7 +933,7 @@ class Session(object):
             try:
                 body = self._http_get(**req_args)
                 break
-            except pytan.exceptions.AuthorizationError:
+            except pytan.lib.pytan.exceptions.AuthorizationError:
                 if self._session_id and auth_retry:
                     self._session_id = ''
                     self.authenticate(**kwargs)
@@ -1045,7 +1034,7 @@ class Session(object):
             try:
                 body = self._http_post(**req_args)
                 break
-            except pytan.exceptions.AuthorizationError:
+            except pytan.lib.pytan.exceptions.AuthorizationError:
                 if self._session_id and auth_retry:
                     self._session_id = ''
                     self.authenticate()
@@ -1131,7 +1120,7 @@ class Session(object):
             response.pytan_help = pytan_help
         except Exception as e:
             m = "HTTP response: GET request to {!r} failed: {}".format
-            raise pytan.exceptions.HttpError(m(full_url, e))
+            raise pytan.lib.pytan.exceptions.HttpError(m(full_url, e))
 
         self.LAST_REQUESTS_RESPONSE = response
         if self.RECORD_ALL_REQUESTS:
@@ -1163,12 +1152,12 @@ class Session(object):
 
         if response.status_code in self.AUTH_FAIL_CODES:
             m = "HTTP response: GET request to {!r} returned code: {}, body: {}".format
-            raise pytan.exceptions.AuthorizationError(m(
+            raise pytan.lib.pytan.exceptions.AuthorizationError(m(
                 full_url, response.status_code, response_body))
 
         if not response.ok:
             m = "HTTP response: GET request to {!r} returned code: {}, body: {}".format
-            raise pytan.exceptions.HttpError(m(full_url, response.status_code, response_body))
+            raise pytan.lib.pytan.exceptions.HttpError(m(full_url, response.status_code, response_body))
 
         self.bodyhttplog.debug("HTTP response: body:\n{}".format(response_body))
 
@@ -1254,7 +1243,7 @@ class Session(object):
             response.pytan_help = pytan_help
         except Exception as e:
             m = "HTTP response: POST request to {!r} failed: {}".format
-            raise pytan.exceptions.HttpError(m(full_url, e))
+            raise pytan.lib.pytan.exceptions.HttpError(m(full_url, e))
 
         self.LAST_REQUESTS_RESPONSE = response
         if self.RECORD_ALL_REQUESTS:
@@ -1286,15 +1275,15 @@ class Session(object):
         if response.status_code in self.AUTH_FAIL_CODES:
             m = "HTTP response: POST request to {!r} returned code: {}, body: {}".format
             m = m(full_url, response.status_code, response_body)
-            raise pytan.exceptions.AuthorizationError(m)
+            raise pytan.lib.pytan.exceptions.AuthorizationError(m)
 
         if not response_body:
             m = "HTTP response: POST request to {!r} returned empty body".format
-            raise pytan.exceptions.HttpError(m(full_url))
+            raise pytan.lib.pytan.exceptions.HttpError(m(full_url))
 
         if not response.ok:
             m = "HTTP response: POST request to {!r} returned code: {}, body: {}".format
-            raise pytan.exceptions.HttpError(m(full_url, response.status_code, response_body))
+            raise pytan.lib.pytan.exceptions.HttpError(m(full_url, response.status_code, response_body))
 
         self.bodyhttplog.debug("HTTP response: body:\n{}".format(response_body))
 
@@ -1592,7 +1581,7 @@ class Session(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['command', 'object_list']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         object_list = obj.toSOAPBody(minimal=True)
         cmd = 'RunPlugin'
@@ -1617,7 +1606,7 @@ class Session(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['command', 'object_list']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         object_list = obj.toSOAPBody(minimal=True)
         cmd = 'AddObject'
@@ -1642,7 +1631,7 @@ class Session(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['command', 'object_list']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         object_list = obj.toSOAPBody(minimal=True)
         cmd = 'DeleteObject'
@@ -1667,7 +1656,7 @@ class Session(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['command', 'object_list']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         object_list = obj.toSOAPBody(minimal=True)
         cmd = 'GetResultInfo'
@@ -1692,7 +1681,7 @@ class Session(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['command', 'object_list']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         object_list = obj.toSOAPBody(minimal=True)
         cmd = 'GetResultData'
@@ -1717,7 +1706,7 @@ class Session(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['command', 'object_list']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         if isinstance(obj, taniumpy.BaseType):
             object_list = obj.toSOAPBody(minimal=True)
@@ -1746,7 +1735,7 @@ class Session(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['command', 'object_list']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         object_list = obj.toSOAPBody(minimal=True)
         cmd = 'UpdateObject'
@@ -1760,7 +1749,7 @@ class Session(object):
         if not self.is_auth:
             class_name = self.__class__.__name__
             err = "Not yet authenticated, use {}.authenticate()!".format
-            raise pytan.exceptions.AuthorizationError(err(class_name))
+            raise pytan.lib.pytan.exceptions.AuthorizationError(err(class_name))
 
     def _regex_body_for_element(self, body, element, fail=True):
         """Utility method to use a regex to get an element from an XML body
@@ -1824,13 +1813,13 @@ class Session(object):
 
         if resultxml_el is None:
             m = "Unable to find ResultXML element in XML response: {}".format
-            raise pytan.exceptions.AuthorizationError(m(response_body))
+            raise pytan.lib.pytan.exceptions.AuthorizationError(m(response_body))
 
         resultxml_text = resultxml_el.text
 
         if not resultxml_text:
             m = "Empty ResultXML element in XML response: {}".format
-            raise pytan.exceptions.AuthorizationError(m(response_body))
+            raise pytan.lib.pytan.exceptions.AuthorizationError(m(response_body))
 
         return resultxml_text
 
@@ -1930,13 +1919,13 @@ class Session(object):
                 response_body = self._get_response(request_body=request_body, **kwargs)
             else:
                 m = "Access denied after re-authenticating! Server response: {}".format
-                raise pytan.exceptions.AuthorizationError(m(response_command))
+                raise pytan.lib.pytan.exceptions.AuthorizationError(m(response_command))
 
         elif response_command != request_command:
             for p in self.BAD_RESPONSE_CMD_PRUNES:
                 response_command = response_command.replace(p, '').strip()
             m = "Response command {} does not match request command {}".format
-            raise pytan.exceptions.BadResponseError(m(response_command, request_command))
+            raise pytan.lib.pytan.exceptions.BadResponseError(m(response_command, request_command))
 
         # update session_id, in case new one issued
         self.session_id = self._regex_body_for_element(

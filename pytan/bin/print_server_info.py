@@ -8,27 +8,20 @@ __version__ = '2.1.5'
 
 import os
 import sys
-sys.dont_write_bytecode = True
+import pytan.lib.pytan.binsupport as binsupport
 
-my_file = os.path.abspath(sys.argv[0])
-my_name = os.path.splitext(os.path.basename(my_file))[0]
-my_dir = os.path.dirname(my_file)
-parent_dir = os.path.dirname(my_dir)
-lib_dir = os.path.join(parent_dir, 'lib')
-path_adds = [lib_dir]
-[sys.path.append(aa) for aa in path_adds if aa not in sys.path]
+def main():
+    my_name = os.path.splitext(os.path.basename(__file__))
+    binsupport.version_check(reqver=__version__)
 
-import pytan
-import pytan.binsupport
-
-if __name__ == "__main__":
-    pytan.binsupport.version_check(reqver=__version__)
-
-    setupmethod = getattr(pytan.binsupport, 'setup_{}_argparser'.format(my_name))
-    responsemethod = getattr(pytan.binsupport, 'process_{}_args'.format(my_name))
+    setupmethod = getattr(binsupport, 'setup_{}_argparser'.format(my_name))
+    responsemethod = getattr(binsupport, 'process_{}_args'.format(my_name))
 
     parser = setupmethod(doc=__doc__)
     args = parser.parse_args()
 
-    handler = pytan.binsupport.process_handler_args(parser=parser, args=args)
+    handler = binsupport.process_handler_args(parser=parser, args=args)
     response = responsemethod(parser=parser, handler=handler, args=args)
+
+if __name__ == "__main__":
+    main()

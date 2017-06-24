@@ -3,18 +3,7 @@
 # Please do not change the two lines above. See PEP 8, PEP 263.
 """Provides methods for the :mod:`pytan` module to print help."""
 import sys
-
-# disable python from creating .pyc files everywhere
-sys.dont_write_bytecode = True
-
 import os
-
-my_file = os.path.abspath(__file__)
-my_dir = os.path.dirname(my_file)
-parent_dir = os.path.dirname(my_dir)
-path_adds = [parent_dir]
-[sys.path.insert(0, aa) for aa in path_adds if aa not in sys.path]
-
 import pytan
 
 
@@ -262,8 +251,8 @@ and VALUE is the string that you want FILTER to match on.
 Valid Filters
 -------------
 
-"""
-    for x in pytan.constants.FILTER_MAPS:
+""" 
+    for x in pytan.lib.pytan.constants.FILTER_MAPS:
         for y in x['human']:
             me.__doc__ += '    {!r:<25}\n'.format(y)
             me.__doc__ += '        Help: {}\n'.format(x['help'])
@@ -299,7 +288,7 @@ Valid Options
 -------------
 
 """
-    for x in pytan.constants.OPTION_MAPS:
+    for x in pytan.lib.pytan.constants.OPTION_MAPS:
         me.__doc__ += '    {!r:<25}\n'.format(x['human'])
         me.__doc__ += '        Help: {}\n'.format(x['help'])
 

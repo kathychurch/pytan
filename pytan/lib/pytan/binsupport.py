@@ -26,16 +26,10 @@ import copy
 from argparse import ArgumentDefaultsHelpFormatter as A1 # noqa
 from argparse import RawDescriptionHelpFormatter as A2 # noqa
 
-my_file = os.path.abspath(__file__)
-my_dir = os.path.dirname(my_file)
-parent_dir = os.path.dirname(my_dir)
-path_adds = [parent_dir]
-[sys.path.insert(0, aa) for aa in path_adds if aa not in sys.path]
-
 import pytan
-import taniumpy
+from pytan.lib import taniumpy
 
-__version__ = pytan.__version__
+__version__ = pytan.lib.pytan.__version__
 pname = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 mylog = logging.getLogger("pytan.handler")
 
@@ -320,7 +314,7 @@ def setup_parser(desc, help=False):
         dest='pytan_user_config',
         help=(
             "PyTan User Config file to use for PyTan arguments (defaults to: {})"
-        ).format(pytan.constants.PYTAN_USER_CONFIG),
+        ).format(pytan.lib.pytan.constants.PYTAN_USER_CONFIG),
     )
     opt_group.add_argument(
         '--force_server_version',
@@ -358,7 +352,7 @@ def setup_write_pytan_user_config_argparser(doc):
         dest='file',
         help=(
             "PyTan User Config file to write for PyTan arguments (defaults to: {})"
-        ).format(pytan.constants.PYTAN_USER_CONFIG),
+        ).format(pytan.lib.pytan.constants.PYTAN_USER_CONFIG),
     )
     return parser
 
@@ -368,7 +362,7 @@ def setup_tsat_argparser(doc):
     """
     parser = setup_parent_parser(doc=doc)
 
-    output_dir = os.path.join(os.getcwd(), 'TSAT_OUTPUT', pytan.utils.get_now())
+    output_dir = os.path.join(os.getcwd(), 'TSAT_OUTPUT', pytan.lib.pytan.utils.get_now())
 
     arggroup = parser.add_argument_group('TSAT General Options')
     arggroup.add_argument(
@@ -512,7 +506,7 @@ def setup_tsat_argparser(doc):
         required=False,
         type=float,
         action='store',
-        default=pytan.pollers.QuestionPoller.COMPLETE_PCT_DEFAULT,
+        default=pytan.lib.pytan.pollers.QuestionPoller.COMPLETE_PCT_DEFAULT,
         dest='complete_pct',
         help='Percent to consider questions complete',
     )
@@ -530,7 +524,7 @@ def setup_tsat_argparser(doc):
         required=False,
         type=int,
         action='store',
-        default=pytan.pollers.QuestionPoller.POLLING_SECS_DEFAULT,
+        default=pytan.lib.pytan.pollers.QuestionPoller.POLLING_SECS_DEFAULT,
         dest='polling_secs',
         help='Number of seconds to wait in between GetResultInfo loops while polling for each question',
     )
@@ -756,7 +750,7 @@ def setup_get_object_argparser(obj, doc):
         help='Get all {}s'.format(obj),
     )
 
-    obj_map = pytan.utils.get_obj_map(obj)
+    obj_map = pytan.lib.pytan.utils.get_obj_map(obj)
     search_keys = copy.copy(obj_map['search'])
 
     if 'id' not in search_keys:
@@ -1232,7 +1226,7 @@ def setup_delete_object_argparser(obj, doc):
     arggroup_name = 'Delete {} Options'.format(obj.replace('_', ' ').capitalize())
     arggroup = parser.add_argument_group(arggroup_name)
 
-    obj_map = pytan.utils.get_obj_map(obj)
+    obj_map = pytan.lib.pytan.utils.get_obj_map(obj)
     search_keys = copy.copy(obj_map['search'])
 
     if obj == 'whitelisted_url':
@@ -1286,7 +1280,7 @@ def setup_ask_saved_argparser(doc):
     group = arggroup.add_mutually_exclusive_group()
 
     obj = 'saved_question'
-    obj_map = pytan.utils.get_obj_map(obj)
+    obj_map = pytan.lib.pytan.utils.get_obj_map(obj)
     search_keys = copy.copy(obj_map['search'])
     for k in search_keys:
         group.add_argument(
@@ -1642,7 +1636,7 @@ def setup_ask_manual_argparser(doc):
         required=False,
         type=float,
         action='store',
-        default=pytan.pollers.QuestionPoller.COMPLETE_PCT_DEFAULT,
+        default=pytan.lib.pytan.pollers.QuestionPoller.COMPLETE_PCT_DEFAULT,
         dest='complete_pct',
         help='Percent to consider questions complete',
     )
@@ -1970,7 +1964,7 @@ def setup_get_saved_question_history_argparser(doc):
         '--file',
         required=False,
         action='store',
-        default='pytan_question_history_{}.csv'.format(pytan.utils.get_now()),
+        default='pytan_question_history_{}.csv'.format(pytan.lib.pytan.utils.get_now()),
         dest='report_file',
         help='File to save report to',
     )
@@ -1989,7 +1983,7 @@ def setup_get_saved_question_history_argparser(doc):
     group = arggroup.add_mutually_exclusive_group()
 
     obj = 'saved_question'
-    obj_map = pytan.utils.get_obj_map(obj)
+    obj_map = pytan.lib.pytan.utils.get_obj_map(obj)
     search_keys = copy.copy(obj_map['search'])
     for k in search_keys:
         group.add_argument(
@@ -2036,7 +2030,7 @@ def process_get_saved_question_history_args(parser, handler, args):
         else:
             parser.error("Must supply --id or --name of saved question if not using --all_questions")
 
-        print "++ Finding saved question: {}".format(pytan.utils.jsonify(get_args))
+        print "++ Finding saved question: {}".format(pytan.lib.pytan.utils.jsonify(get_args))
 
         try:
             saved_question = handler.get(**get_args)[0]
@@ -2090,7 +2084,7 @@ def process_get_saved_question_history_args(parser, handler, args):
 
     # derive start time from expiration and expire_seconds
     [
-        setattr(x, 'start_time', pytan.utils.calculate_question_start_time(x)[0])
+        setattr(x, 'start_time', pytan.lib.pytan.utils.calculate_question_start_time(x)[0])
         for x in all_questions
     ]
 
@@ -2366,7 +2360,7 @@ class TsatWorker(object):
         self.mylog.debug('Removing file logging to: {}'.format(logfile))
         basename = os.path.basename(logfile)
         root_logger = logging.getLogger()
-        all_loggers = pytan.utils.get_all_loggers()
+        all_loggers = pytan.lib.pytan.utils.get_all_loggers()
         for k, v in all_loggers.items():
             for x in v.handlers:
                 if x.name == basename:
@@ -2376,7 +2370,7 @@ class TsatWorker(object):
         """Utility to add a log file from python's logging module"""
         self.remove_file_log(logfile)
         self.mylog.debug('Adding file logging to: {}'.format(logfile))
-        all_loggers = pytan.utils.get_all_loggers()
+        all_loggers = pytan.lib.pytan.utils.get_all_loggers()
         basename = os.path.basename(logfile)
         file_handler = logging.FileHandler(logfile)
         file_handler.set_name(basename)
@@ -2472,7 +2466,7 @@ class TsatWorker(object):
 
         config = {}
         config['parameters'] = self.PARAM_VALS
-        config_json = pytan.utils.jsonify(config)
+        config_json = pytan.lib.pytan.utils.jsonify(config)
         try:
             fh = open(self.ARGS.build_config_file, 'wb')
             fh.write(config_json)
@@ -2795,13 +2789,13 @@ class TsatWorker(object):
         sensor_defs.append(sensor_def)
 
         if self.ARGS.add_sensor:
-            add_sensor_defs = pytan.utils.dehumanize_sensors(sensors=self.ARGS.add_sensor)
+            add_sensor_defs = pytan.lib.pytan.utils.dehumanize_sensors(sensors=self.ARGS.add_sensor)
             sensor_defs += add_sensor_defs
 
-        q_filter_defs = pytan.utils.dehumanize_question_filters(
+        q_filter_defs = pytan.lib.pytan.utils.dehumanize_question_filters(
             question_filters=self.ARGS.question_filters
         )
-        q_option_defs = pytan.utils.dehumanize_question_options(
+        q_option_defs = pytan.lib.pytan.utils.dehumanize_question_options(
             question_options=self.ARGS.question_options
         )
 
@@ -2835,7 +2829,7 @@ class TsatWorker(object):
             self.mylog.debug("QuestionPoller args:\n{}".format(pprint.pformat(p_args)))
 
         try:
-            poller = pytan.pollers.QuestionPoller(**p_args)
+            poller = pytan.lib.pyta.pollers.QuestionPoller(**p_args)
             poller_result = poller.run()
             report_info['msg'] = "Successfully asked and polled"
             report_info['estimated_total_clients'] = poller.result_info.estimated_total
@@ -2910,14 +2904,14 @@ class TsatWorker(object):
         return sensor_dir
 
     def get_logfile_path(self, logname, logdir):
-        logfile = '{}_{}.log'.format(logname, pytan.utils.get_now())
+        logfile = '{}_{}.log'.format(logname, pytan.lib.pytan.utils.get_now())
         logfile = filter_filename(logfile)
         logfile_path = os.path.join(logdir, logfile)
         return logfile_path
 
     def write_final_results(self, reports):
         csv_str = csvdictwriter(reports, headers=self.FINAL_REPORT_HEADERS)
-        csv_file = '{}_{}.csv'.format(self.MY_NAME, pytan.utils.get_now())
+        csv_file = '{}_{}.csv'.format(self.MY_NAME, pytan.lib.pytan.utils.get_now())
         csv_file = filter_filename(csv_file)
         csv_file_path = os.path.join(self.ARGS.report_dir, csv_file)
 
@@ -3328,7 +3322,7 @@ def process_print_server_info_args(parser, handler, args):
     si = handler.session.get_server_info()
 
     if args.json:
-        print pytan.utils.jsonify(si['diags_flat'])
+        print pytan.lib.pytan.utils.jsonify(si['diags_flat'])
     else:
         print str(handler)
         print_obj(si['diags_flat'])
@@ -3484,7 +3478,7 @@ def process_ask_parsed_args(parser, handler, args):
     obj_grp_opts = get_grp_opts(parser=parser, grp_names=obj_grp_names)
     obj_grp_args = {k: getattr(args, k) for k in obj_grp_opts if getattr(args, k, None)}
 
-    print "++ Asking parsed question:\n{}".format(pytan.utils.jsonify(obj_grp_args))
+    print "++ Asking parsed question:\n{}".format(pytan.lib.pytan.utils.jsonify(obj_grp_args))
 
     try:
         response = handler.ask(qtype='parsed', **obj_grp_args)
@@ -3537,7 +3531,7 @@ def process_ask_manual_args(parser, handler, args):
     obj_grp_args = {k: getattr(args, k) for k in obj_grp_opts}
     other_args = {a: b for a, b in args.__dict__.iteritems() if a not in obj_grp_args}
 
-    print "++ Asking manual question:\n{}".format(pytan.utils.jsonify(obj_grp_args))
+    print "++ Asking manual question:\n{}".format(pytan.lib.pytan.utils.jsonify(obj_grp_args))
 
     try:
         response = handler.ask(qtype='manual', **obj_grp_args)
@@ -3588,7 +3582,7 @@ def process_deploy_action_args(parser, handler, args):
     obj_grp_opts = get_grp_opts(parser=parser, grp_names=obj_grp_names)
     obj_grp_args = {k: getattr(args, k) for k in obj_grp_opts}
 
-    print "++ Deploying action:\n{}".format(pytan.utils.jsonify(obj_grp_args))
+    print "++ Deploying action:\n{}".format(pytan.lib.pytan.utils.jsonify(obj_grp_args))
 
     try:
         response = handler.deploy_action(**obj_grp_args)
@@ -3710,7 +3704,7 @@ def process_ask_saved_args(parser, handler, args):
 
     q_args['refresh_data'] = refresh_arg
 
-    print "++ Asking saved question: {}".format(pytan.utils.jsonify(q_args))
+    print "++ Asking saved question: {}".format(pytan.lib.pytan.utils.jsonify(q_args))
 
     try:
         response = handler.ask(qtype='saved', **q_args)
@@ -3759,7 +3753,7 @@ def process_handler_args(parser, args):
     handler_args = {k: getattr(args, k) for k in handler_opts}
     # print handler_args
     try:
-        h = pytan.Handler(**handler_args)
+        h = pytan.lib.pytan.handler.Handler(**handler_args)
     except Exception as e:
         traceback.print_exc()
         print "\n\nError occurred: {}".format(e)
@@ -3843,7 +3837,7 @@ def introspect(obj, depth=0):
 
 def input_prompts(args):
     """Utility function to prompt for username, `, and host if empty"""
-    puc_default = os.path.expanduser(pytan.constants.PYTAN_USER_CONFIG)
+    puc_default = os.path.expanduser(pytan.lib.pytan.constants.PYTAN_USER_CONFIG)
     puc_kwarg = args.__dict__.get('pytan_user_config', '')
     puc = puc_kwarg or puc_default
     puc_dict = {}
@@ -3874,10 +3868,10 @@ def input_prompts(args):
 def print_obj(d, indent=0):
     """Pretty print a dictionary"""
     for k, v in d.iteritems():
-        if pytan.utils.is_dict(v):
+        if pytan.lib.pytan.utils.is_dict(v):
             print "{}{}: \n".format('  ' * indent, k),
             print_obj(v, indent + 1)
-        elif pytan.utils.is_list(v):
+        elif pytan.lib.pytan.utils.is_list(v):
             print "{}{}: ".format('  ' * indent, k)
             for a in v:
                 print_obj(a, indent + 1)
@@ -3915,10 +3909,10 @@ def add_file_log(logfile, debug=False):
         file_handler.set_name(basename)
         if debug:
             file_handler.setLevel(logging.DEBUG)
-            file_handler.setFormatter(logging.Formatter(pytan.constants.DEBUG_FORMAT))
+            file_handler.setFormatter(logging.Formatter(pytan.lib.pytan.constants.DEBUG_FORMAT))
         else:
             file_handler.setLevel(logging.INFO)
-            file_handler.setFormatter(logging.Formatter(pytan.constants.INFO_FORMAT))
+            file_handler.setFormatter(logging.Formatter(pytan.lib.pytan.constants.INFO_FORMAT))
         root_logger.addHandler(file_handler)
         mylog.info(('Added file logging to: {}').format(logfile))
     except Exception as e:

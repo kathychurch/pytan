@@ -12,9 +12,6 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from SocketServer import ThreadingMixIn
 import threading
 
-# disable python from creating .pyc files everywhere
-sys.dont_write_bytecode = True
-
 
 class CustomHTTPHandler(BaseHTTPRequestHandler):
     ENABLE_LOGGING = True

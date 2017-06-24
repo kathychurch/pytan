@@ -27,33 +27,16 @@ Copyright for PyTan
 import sys
 import os
 
-# disable python from creating .pyc files everywhere
-sys.dont_write_bytecode = True
-
-my_file = os.path.abspath(__file__)
-my_dir = os.path.dirname(my_file)
-parent_dir = os.path.dirname(my_dir)
-path_adds = [parent_dir]
-[sys.path.insert(0, aa) for aa in path_adds]
-
-import taniumpy  # noqa
-
 import pytan  # noqa
-import pytan.xml_clean  # noqa
-import pytan.utils  # noqa
-import pytan.handler  # noqa
-import pytan.sessions  # noqa
-import pytan.constants  # noqa
-import pytan.help  # noqa
-import pytan.exceptions  # noqa
-
-from pytan import exceptions  # noqa
-from pytan import utils  # noqa
-from pytan import constants  # noqa
-from pytan import pollers  # noqa
-from pytan import sessions  # noqa
-from pytan import help  # noqa
-from pytan.handler import Handler  # noqa
+from pytan.lib import taniumpy # noqa
+from pytan.lib.pytan import xml_clean # noqa
+from pytan.lib.pytan import exceptions  # noqa
+from pytan.lib.pytan import utils  # noqa
+from pytan.lib.pytan import constants  # noqa
+from pytan.lib.pytan import pollers  # noqa
+from pytan.lib.pytan import sessions  # noqa
+from pytan.lib.pytan import help  # noqa
+from pytan.lib.pytan.handler import Handler  # noqa
 
 
 # Set default logging handler to avoid "No handler found" warnings.

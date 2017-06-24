@@ -15,14 +15,7 @@ import time
 import pprint
 from datetime import datetime
 from datetime import timedelta
-
-my_file = os.path.abspath(__file__)
-my_dir = os.path.dirname(my_file)
-parent_dir = os.path.dirname(my_dir)
-path_adds = [parent_dir]
-[sys.path.insert(0, aa) for aa in path_adds if aa not in sys.path]
-
-import taniumpy
+from pytan.lib import taniumpy
 import pytan
 
 
@@ -103,13 +96,13 @@ class QuestionPoller(object):
 
         self.setup_logging()
 
-        if not isinstance(handler, pytan.handler.Handler):
+        if not isinstance(handler, pytan.lib.pytan.handler.Handler):
             m = "{} is not a valid handler instance! Must be a: {!r}".format
-            raise pytan.exceptions.PollingError(m(type(handler), pytan.handler.Handler))
+            raise pytan.lib.pytan.exceptions.PollingError(m(type(handler), pytan.lib.pytan.handler.Handler))
 
         if not isinstance(obj, self.OBJECT_TYPE):
             m = "{} is not a valid object type! Must be a: {}".format
-            raise pytan.exceptions.PollingError(m(type(obj), self.OBJECT_TYPE))
+            raise pytan.lib.pytan.exceptions.PollingError(m(type(obj), self.OBJECT_TYPE))
 
         self.handler = handler
         self.obj = obj
@@ -160,13 +153,13 @@ class QuestionPoller(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['obj']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         obj = self.handler._find(obj=self.obj, **clean_kwargs)
 
-        if pytan.utils.empty_obj(obj):
+        if pytan.lib.pytan.utils.empty_obj(obj):
             m = "Unable to find object: {}".format
-            raise pytan.exceptions.PollingError(m(self.obj))
+            raise pytan.lib.pytan.exceptions.PollingError(m(self.obj))
 
         self.obj = obj
 
@@ -192,7 +185,7 @@ class QuestionPoller(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['obj', 'pytan_help']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         val = getattr(self.obj, attr, None)
 
@@ -208,7 +201,7 @@ class QuestionPoller(object):
         if val is None:
             if fallback is None:
                 m = "{}{!r} is None, even after re-fetching object".format
-                raise pytan.exceptions.PollingError(m(self.id_str, attr))
+                raise pytan.lib.pytan.exceptions.PollingError(m(self.id_str, attr))
 
             m = (
                 "{}attribute {!r} is not set after re-fetching object - using fallback of {}"
@@ -226,7 +219,7 @@ class QuestionPoller(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['attr', 'fallback']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         attr_name = 'query_text'
         fb = 'Unable to fetch question text'
@@ -250,10 +243,10 @@ class QuestionPoller(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['attr', 'fallback']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         attr_name = self.EXPIRATION_ATTR
-        fb = pytan.utils.seconds_from_now(secs=self.EXPIRY_FALLBACK_SECS)
+        fb = pytan.lib.pytan.utils.seconds_from_now(secs=self.EXPIRY_FALLBACK_SECS)
         self.expiration = self._derive_attribute(attr=attr_name, fallback=fb, **clean_kwargs)
 
     def run_callback(self, callbacks, callback, pct, **kwargs):
@@ -265,7 +258,7 @@ class QuestionPoller(object):
             return
 
         cb_clean_keys = ['poller', 'pct']
-        cb_clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=cb_clean_keys)
+        cb_clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=cb_clean_keys)
 
         try:
             m = "Running callback: {}".format
@@ -288,7 +281,7 @@ class QuestionPoller(object):
         self.complete_pct = val
 
     def get_result_info(self, **kwargs):
-        """Simple utility wrapper around :func:`pytan.handler.Handler.get_result_info`
+        """Simple utility wrapper around :func:`pytan.lib.pytan.handler.Handler.get_result_info`
 
         Parameters
         ----------
@@ -306,7 +299,7 @@ class QuestionPoller(object):
         gri_retry_count = kwargs.get('gri_retry_count', 10)
 
         clean_keys = ['obj', 'gri_retry_count']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         current_try = 1
 
@@ -319,7 +312,7 @@ class QuestionPoller(object):
             attempt_text = "attempt {} out of {}".format(current_try, gri_retry_count)
             if current_try >= gri_retry_count:
                 m = "Estimated Total of Clients is 0 -- no clients available?, {}".format
-                raise pytan.exceptions.PollingError(m(attempt_text))
+                raise pytan.lib.pytan.exceptions.PollingError(m(attempt_text))
             else:
                 current_try += 1
                 h = "Re-issuing a GetResultInfo since the estimated_total came back 0, {}".format
@@ -331,7 +324,7 @@ class QuestionPoller(object):
         return result_info
 
     def get_result_data(self, **kwargs):
-        """Simple utility wrapper around :func:`pytan.handler.Handler.get_result_data`
+        """Simple utility wrapper around :func:`pytan.lib.pytan.handler.Handler.get_result_data`
 
         Returns
         -------
@@ -340,7 +333,7 @@ class QuestionPoller(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['obj']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
         result_data = self.handler.get_result_data(obj=self.obj, **clean_kwargs)
         return result_data
 
@@ -373,7 +366,7 @@ class QuestionPoller(object):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         self.start = datetime.utcnow()
-        self.expiration_timeout = pytan.utils.timestr_to_datetime(timestr=self.expiration)
+        self.expiration_timeout = pytan.lib.pytan.utils.timestr_to_datetime(timestr=self.expiration)
 
         if self.override_timeout_secs:
             td_obj = timedelta(seconds=self.override_timeout_secs)
@@ -382,7 +375,7 @@ class QuestionPoller(object):
             self.override_timeout = None
 
         clean_keys = ['callbacks']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         self.passed_eq_total = self.passed_eq_est_total_loop(callbacks=callbacks, **clean_kwargs)
         self.poller_result = all([self.passed_eq_total])
@@ -403,7 +396,7 @@ class QuestionPoller(object):
         while not self._stop:
             # perform a GetResultInfo SOAP call
             clean_keys = ['pytan_help', 'callback', 'pct']
-            clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+            clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
             h = "Issue a GetResultInfo for a Question to check the current progress of answers"
             self.result_info = self.get_result_info(pytan_help=h, **clean_kwargs)
@@ -417,7 +410,7 @@ class QuestionPoller(object):
             est_total = self.override_estimated_total or self.result_info.estimated_total
             passed = self.result_info.passed
 
-            new_pct = pytan.utils.get_percentage(part=tested, whole=est_total)
+            new_pct = pytan.lib.pytan.utils.get_percentage(part=tested, whole=est_total)
             new_pct_str = "{0:.0f}%".format(new_pct)
             complete_pct_str = "{0:.0f}%".format(self.complete_pct)
 
@@ -536,7 +529,7 @@ class ActionPoller(QuestionPoller):
 
     Parameters
     ----------
-    handler : :class:`pytan.handler.Handler`
+    handler : :class:`pytan.lib.pytan.handler.Handler`
         * PyTan handler to use for GetResultInfo calls
     obj : :class:`taniumpy.object_types.action.Action`
         * object to poll for progress
@@ -587,7 +580,7 @@ class ActionPoller(QuestionPoller):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['attr', 'fallback']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         attr_name = 'status'
         fb = None
@@ -598,7 +591,7 @@ class ActionPoller(QuestionPoller):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['attr', 'fallback']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         attr_name = 'stopped_flag'
         fb = None
@@ -611,7 +604,7 @@ class ActionPoller(QuestionPoller):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['attr', 'fallback', 'obj']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         attr_name = 'package_spec'
         fb = None
@@ -627,7 +620,7 @@ class ActionPoller(QuestionPoller):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['attr', 'fallback', 'obj']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         attr_name = 'target_group'
         fb = None
@@ -766,7 +759,7 @@ class ActionPoller(QuestionPoller):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         self.start = datetime.utcnow()
-        self.expiration_timeout = pytan.utils.timestr_to_datetime(timestr=self.expiration)
+        self.expiration_timeout = pytan.lib.pytan.utils.timestr_to_datetime(timestr=self.expiration)
 
         if self.override_timeout_secs:
             td_obj = timedelta(seconds=self.override_timeout_secs)
@@ -775,7 +768,7 @@ class ActionPoller(QuestionPoller):
             self.override_timeout = None
 
         clean_keys = ['callbacks', 'obj', 'pytan_help', 'handler']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         if self.override_passed_count:
             self.passed_count = self.override_passed_count
@@ -838,7 +831,7 @@ class ActionPoller(QuestionPoller):
 
         while not self._stop:
             clean_keys = ['pytan_help', 'aggregate', 'callback', 'pct']
-            clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+            clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
             # re-fetch object and re-derive stopped flag and status
             h = (
@@ -872,7 +865,7 @@ class ActionPoller(QuestionPoller):
 
             # we use self.passed_count from the question we asked to get the number of matching
             # systems for determining the current pct of completion
-            new_pct = pytan.utils.get_percentage(part=seen_count, whole=self.passed_count)
+            new_pct = pytan.lib.pytan.utils.get_percentage(part=seen_count, whole=self.passed_count)
             new_pct_str = "{0:.0f}%".format(new_pct)
             complete_pct_str = "{0:.0f}%".format(self.complete_pct)
 
@@ -983,7 +976,7 @@ class ActionPoller(QuestionPoller):
 
         while not self._stop:
             clean_keys = ['pytan_help', 'aggregate', 'callback', 'pct']
-            clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+            clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
             # re-fetch object and re-derive stopped flag and status
             h = (
@@ -1042,7 +1035,7 @@ class ActionPoller(QuestionPoller):
 
             # we use self.passed_count from the question we asked to get the number of matching
             # systems for determining the current pct of completion
-            new_pct = pytan.utils.get_percentage(part=finished_count, whole=self.passed_count)
+            new_pct = pytan.lib.pytan.utils.get_percentage(part=finished_count, whole=self.passed_count)
             new_pct_str = "{0:.0f}%".format(new_pct)
             complete_pct_str = "{0:.0f}%".format(self.complete_pct)
 
@@ -1143,7 +1136,7 @@ class SSEPoller(QuestionPoller):
 
     Parameters
     ----------
-    handler : :class:`pytan.handler.Handler`
+    handler : :class:`pytan.lib.pytan.handler.Handler`
         PyTan handler to use for GetResultInfo calls
     export_id : str
         * ID of server side export
@@ -1179,9 +1172,9 @@ class SSEPoller(QuestionPoller):
 
         self.setup_logging()
 
-        if not isinstance(handler, pytan.handler.Handler):
+        if not isinstance(handler, pytan.lib.pytan.handler.Handler):
             m = "{} is not a valid handler instance! Must be a: {!r}".format
-            raise pytan.exceptions.PollingError(m(type(handler), pytan.handler.Handler))
+            raise pytan.lib.pytan.exceptions.PollingError(m(type(handler), pytan.lib.pytan.handler.Handler))
 
         self.handler = handler
         self.export_id = export_id
@@ -1207,7 +1200,7 @@ class SSEPoller(QuestionPoller):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['url']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         export_id = kwargs.get('export_id', self.export_id)
         short_url = 'export/{}.status'.format(export_id)
@@ -1233,7 +1226,7 @@ class SSEPoller(QuestionPoller):
         self._debug_locals(sys._getframe().f_code.co_name, locals())
 
         clean_keys = ['url']
-        clean_kwargs = pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
+        clean_kwargs = pytan.lib.pytan.utils.clean_kwargs(kwargs=kwargs, keys=clean_keys)
 
         export_id = kwargs.get('export_id', self.export_id)
         short_url = 'export/{}.gz'.format(export_id)
@@ -1309,7 +1302,7 @@ class SSEPoller(QuestionPoller):
 
             if 'failed' in self.sse_status.lower():
                 m = "{}Server Side Export Failed: '{}'".format
-                raise pytan.exceptions.ServerSideExportError(m(self.id_str, self.sse_status))
+                raise pytan.lib.pytan.exceptions.ServerSideExportError(m(self.id_str, self.sse_status))
 
             if 'completed' in self.sse_status.lower():
                 m = "{}Server Side Export Completed: '{}'".format

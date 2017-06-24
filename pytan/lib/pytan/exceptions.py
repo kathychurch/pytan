@@ -4,10 +4,6 @@
 """Provides exceptions for the :mod:`pytan` module."""
 import sys
 
-# disable python from creating .pyc files everywhere
-sys.dont_write_bytecode = True
-
-
 class HandlerError(Exception):
     """Exception thrown for errors in :mod:`pytan.handler`"""
     pass
