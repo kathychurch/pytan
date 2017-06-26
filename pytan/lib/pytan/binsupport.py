@@ -4,10 +4,6 @@
 # Please do not change the two lines above. See PEP 8, PEP 263.
 """Collection of classes and methods used throughout :mod:`pytan` for command line support"""
 import sys
-
-# disable python from creating .pyc files everywhere
-sys.dont_write_bytecode = True
-
 import os
 import logging
 import code

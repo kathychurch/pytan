@@ -5,10 +5,6 @@
 """Collection of classes and methods for polling of actions/questions in :mod:`pytan`"""
 
 import sys
-
-# disable python from creating .pyc files everywhere
-sys.dont_write_bytecode = True
-
 import os
 import logging
 import time
