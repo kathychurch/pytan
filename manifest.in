@@ -1,7 +1,7 @@
 include README.md
 include LICENSE
-prune pytan/BUILD
-prune pytan/EXAMPLES
-prune pytan/doc
-prune pytan/winbin
-prune pytan/test
+prune pytan_pkgs/BUILD
+prune pytan_pkgs/EXAMPLES
+prune pytan_pkgs/doc
+prune pytan_pkgs/winbin
+prune pytan_pkgs/test
