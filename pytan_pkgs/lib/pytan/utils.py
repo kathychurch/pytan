@@ -17,6 +17,8 @@ from collections import OrderedDict
 from pytan_pkgs.lib import taniumpy
 from pytan_pkgs.lib import xmltodict
 import pytan_pkgs.lib.pytan as pytan
+from pytan_pkgs.lib.pytan import help, exceptions, constants
+
 
 mylog = logging.getLogger("pytan.handler")
 humanlog = logging.getLogger("pytan.handler.ask_manual_human")

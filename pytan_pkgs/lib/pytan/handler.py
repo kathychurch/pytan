@@ -11,6 +11,7 @@ import pprint
 import json
 from pytan_pkgs.lib import taniumpy
 from pytan_pkgs.lib import pytan
+from pytan_pkgs.lib.pytan import utils, constants, exceptions, pollers, sessions, __version__
 
 
 class Handler(object):

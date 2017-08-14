@@ -19,10 +19,11 @@ try:
     import xml.etree.cElementTree as ET
 except:
     import xml.etree.ElementTree as ET
-from pytan.xml_clean import xml_clean
+from pytan_pkgs.lib.pytan.xml_clean import xml_cleaner
 from pytan_pkgs.lib import requests
 from pytan_pkgs.lib import taniumpy
 from pytan_pkgs.lib import pytan
+from pytan_pkgs.lib.pytan import exceptions, utils
 requests.packages.urllib3.disable_warnings()
 
 import sys
