@@ -27,6 +27,10 @@ setup(
     long_description=description,
     packages=find_packages("."),
     platforms='any',
+    install_requires=[
+        'requests>=2.18.1',
+        'xmltodict>=0.11.0',
+        'ddt'],
     entry_points={
         'console_scripts': ['pytan-approve-saved-action = pytan_pkgs.bin.approve_saved_action:main',
                             'pytan-ask-manual = pytan_pkgs.bin.ask_manual:main',
