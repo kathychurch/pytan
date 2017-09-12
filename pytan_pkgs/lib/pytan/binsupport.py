@@ -24,6 +24,11 @@ from argparse import RawDescriptionHelpFormatter as A2 # noqa
 
 from pytan_pkgs.lib import taniumpy
 from pytan_pkgs.lib import pytan
+import pytan_pkgs.lib.pytan.constants
+import pytan_pkgs.lib.pytan.utils
+import pytan_pkgs.lib.pytan.pollers
+import pytan_pkgs.lib.pytan.handler
+import pytan_pkgs.lib.pytan.exceptions
 
 __version__ = pytan.__version__
 pname = os.path.splitext(os.path.basename(sys.argv[0]))[0]
@@ -2825,7 +2830,7 @@ class TsatWorker(object):
             self.mylog.debug("QuestionPoller args:\n{}".format(pprint.pformat(p_args)))
 
         try:
-            poller = pytan.lib.pyta.pollers.QuestionPoller(**p_args)
+            poller = pytan.pollers.QuestionPoller(**p_args)
             poller_result = poller.run()
             report_info['msg'] = "Successfully asked and polled"
             report_info['estimated_total_clients'] = poller.result_info.estimated_total
