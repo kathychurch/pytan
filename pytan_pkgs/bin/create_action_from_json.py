@@ -11,7 +11,7 @@ import sys
 from pytan_pkgs.lib.pytan import binsupport
 
 def main():
-    my_name = os.path.splitext(os.path.basename(__file__))
+    my_name = os.path.splitext(os.path.basename(__file__))[0]
     binsupport.version_check(reqver=__version__)
 
     parser = binsupport.setup_create_json_object_argparser(obj='action', doc=__doc__)
