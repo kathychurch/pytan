@@ -29,7 +29,8 @@ setup(
     platforms='any',
     install_requires=[
         'requests>=2.17.3',
-        'xmltodict>=0.10.2'],
+        'xmltodict>=0.10.2',
+        'pyreadline>=1.5;platform_system=="Windows"'],
     entry_points={
         'console_scripts': ['pytan-approve-saved-action = pytan_pkgs.bin.approve_saved_action:main',
                             'pytan-ask-manual = pytan_pkgs.bin.ask_manual:main',
