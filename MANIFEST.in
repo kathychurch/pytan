@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+prune pytan_pkgs/BUILD
+prune pytan_pkgs/EXAMPLES
+prune pytan_pkgs/doc
+prune pytan_pkgs/test
