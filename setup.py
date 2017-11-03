@@ -3,8 +3,7 @@ from setuptools import setup, find_packages
 description = "This is a set of packages and scripts that provide a simple way for interfacing with the Tanium SOAP API using python or the command line."
 setup(
     name='pytan',
-    setup_requires=['setuptools_scm'],
-    use_scm_version=True,
+    version="2.1.9",
     url='http://tanium.github.io/pytan',
     license='MIT',
     author='Jim Olsen',
